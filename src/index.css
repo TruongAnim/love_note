@@ -47,13 +47,21 @@
   }
 
   .snap-container {
-    @apply h-screen overflow-y-auto scroll-smooth;
-    scroll-snap-type: y mandatory;
+    @apply h-[100dvh] overflow-y-auto scroll-smooth;
+  }
+  @media (min-width: 768px) {
+    .snap-container {
+      scroll-snap-type: y mandatory;
+    }
   }
 
   .snap-section {
-    @apply h-screen w-full relative flex items-center justify-center;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+    @apply w-full relative flex items-center justify-center min-h-[100dvh] md:h-[100dvh];
+  }
+  @media (min-width: 768px) {
+    .snap-section {
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+    }
   }
 }

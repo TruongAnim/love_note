@@ -601,16 +601,32 @@ export default function App() {
   const [isChapterTwoPopupOpen, setIsChapterTwoPopupOpen] = useState(false);
   const [isStatsPopupOpen, setIsStatsPopupOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const video1Ref = useRef<HTMLVideoElement>(null);
+  const video2Ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       const sections = ['hero', 'milestones', 'confessions', 'cinema', 'stats', 'continuation'];
-      const scrollPos = containerRef.current?.scrollTop || 0;
-      const height = window.innerHeight;
       
-      const index = Math.round(scrollPos / height);
-      if (sections[index]) {
-        setActiveSection(sections[index]);
+      if (window.innerWidth >= 768) {
+        const scrollPos = containerRef.current?.scrollTop || 0;
+        const height = window.innerHeight;
+        const index = Math.round(scrollPos / height);
+        if (sections[index]) {
+          setActiveSection(sections[index]);
+        }
+      } else {
+        const midY = window.innerHeight / 2;
+        for (const id of sections) {
+          const el = document.getElementById(id);
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            if (rect.top <= midY && rect.bottom >= midY) {
+              setActiveSection(id);
+              break;
+            }
+          }
+        }
       }
     };
 
@@ -618,6 +634,20 @@ export default function App() {
     container?.addEventListener('scroll', handleScroll);
     return () => container?.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (activeSection === 'confessions') {
+      video1Ref.current?.play().catch(console.error);
+    } else {
+      video1Ref.current?.pause();
+    }
+
+    if (activeSection === 'cinema') {
+      video2Ref.current?.play().catch(console.error);
+    } else {
+      video2Ref.current?.pause();
+    }
+  }, [activeSection]);
 
   return (
     <div className="relative bg-surface text-on-surface font-body overflow-hidden">
@@ -725,8 +755,7 @@ export default function App() {
                 className="relative w-full max-w-[260px] md:max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden ethereal-shadow group"
               >
                 <video 
-                  autoPlay 
-                  muted 
+                  ref={video1Ref}
                   loop 
                   playsInline 
                   className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale-[10%]"
@@ -839,8 +868,7 @@ export default function App() {
                 className="relative w-full max-w-[260px] md:max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden ethereal-shadow group bg-black"
               >
                 <video 
-                  autoPlay 
-                  muted 
+                  ref={video2Ref}
                   loop 
                   playsInline 
                   className="w-full h-full object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105"
