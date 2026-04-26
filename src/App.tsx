@@ -5,21 +5,21 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Heart, 
-  Milestones, 
-  BarChart2, 
-  Video, 
-  ChevronDown, 
-  Coffee, 
-  MessageCircle, 
-  Phone, 
+import { Heart,
+  Milestones as MilestonesIcon,
+  BarChart2,
+  Video,
+  ChevronDown,
+  Coffee,
+  MessageCircle,
+  Phone,
   ArrowRight,
   Sparkles,
   BookOpen,
   CalendarDays,
   Image as ImageIcon
 } from 'lucide-react';
+import { translations, Lang } from './translations';
 
 // --- Types ---
 interface Milestone {
@@ -120,9 +120,27 @@ const STATS: Stat[] = [
   { id: 's4', value: '639', label: 'Media Shared', icon: <ImageIcon />, bgClass: 'bg-primary-fixed/30' }
 ];
 
+const getStats = (lang: Lang): Stat[] => {
+  const t = translations[lang].stats;
+  return STATS.map((s, idx) => ({
+    ...s,
+    label: idx === 0 ? t.days : idx === 1 ? t.messages : idx === 2 ? t.reactions : t.media
+  }));
+};
+
+const getMilestones = (lang: Lang): Milestone[] => {
+  return ALL_MILESTONES.map((m, index) => ({
+    ...m,
+    date: translations[lang].allMilestones[index].date,
+    title: translations[lang].allMilestones[index].title,
+    description: translations[lang].allMilestones[index].description,
+  }));
+};
+
 // --- Components ---
 
-const ChapterOnePopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const ChapterOnePopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+  const t = translations[lang].popups.ch1;
   return (
     <AnimatePresence>
       {isOpen && (
@@ -141,8 +159,8 @@ const ChapterOnePopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
           >
             <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl">
               <div>
-                <h2 className="font-headline text-3xl text-primary">The First Adventure</h2>
-                <p className="text-on-surface-variant font-body mt-1">March 28, 2026</p>
+                <h2 className="font-headline text-3xl text-primary">{t.title}</h2>
+                <p className="text-on-surface-variant font-body mt-1">{t.date}</p>
               </div>
               <button 
                 onClick={onClose}
@@ -157,15 +175,9 @@ const ChapterOnePopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
             
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                <div className="prose prose-lg prose-p:text-on-surface-variant prose-p:leading-relaxed max-w-none space-y-6">
-                  <p>
-                    It was our very first date, the weekend of March 28, 2026. After work that Saturday, we had planned for you to take a bus down to Hanoi to visit me. When evening fell and I couldn't reach you, my heart grew heavy with worry—until you finally arrived. We wandered around the tranquil Hoan Kiem Lake, caught a movie at Trang Tien Plaza, and stayed out talking until the late hours.
-                  </p>
-                  <p>
-                    The very next day, I picked you up for an adventure at Royal City. It was raining heavily, and despite our raincoats, our shoes were completely soaked. Yet, the rain couldn't dampen our spirits. We went bowling, played arcade games, shared tacos, and played badminton together. Every second was filled with unapologetic joy. 
-                  </p>
-                  <p>
-                    When darkness fell, I couldn't just let you go back alone on a bus. So, I drove you all the way back to your hometown on my motorbike. We finally arrived at 11 PM. Looking back, that rainy weekend remains one of our most beautiful and cherished memories.
-                  </p>
+                  <p>{t.p1}</p>
+                  <p>{t.p2}</p>
+                  <p>{t.p3}</p>
                </div>
             </div>
           </motion.div>
@@ -175,7 +187,8 @@ const ChapterOnePopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
   );
 };
 
-const ChapterTwoPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const ChapterTwoPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+  const t = translations[lang].popups.ch2;
   return (
     <AnimatePresence>
       {isOpen && (
@@ -194,8 +207,8 @@ const ChapterTwoPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
           >
             <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl">
               <div>
-                <h2 className="font-headline text-3xl text-primary">Meeting The Family</h2>
-                <p className="text-on-surface-variant font-body mt-1">April 11, 2026</p>
+                <h2 className="font-headline text-3xl text-primary">{t.title}</h2>
+                <p className="text-on-surface-variant font-body mt-1">{t.date}</p>
               </div>
               <button 
                 onClick={onClose}
@@ -210,18 +223,10 @@ const ChapterTwoPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
             
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                <div className="prose prose-lg prose-p:text-on-surface-variant prose-p:leading-relaxed max-w-none space-y-6">
-                  <p>
-                    It was the weekend of April 11th. I went back to my hometown, and you came to pick me up for a walk. We strolled along the peaceful dike, cutting across the vast, green rice fields. That was the moment I finally gathered the courage to hold your hand for the very first time.
-                  </p>
-                  <p>
-                    The next morning, you rode your motorbike to pick me up and visit your grandmother's house for lunch. We went to the market together to buy groceries. When we arrived, meeting your extended family made me quite nervous, but I tried my best to help out in the kitchen—even though my cooking skills were less than stellar! We prepared a feast: fried spring rolls, boiled duck, stir-fried buffalo meat with piper lolot, and bean sprouts with duck. You even brought a bottle of wine and some beers. 
-                  </p>
-                  <p>
-                    The whole family was so welcoming, and the meal was filled with laughter, which eased my anxiety. I ended up drinking a bit more than I should have, trying to keep up with your brothers, but it was all in good spirits. We finished the meal with a sweet yogurt dessert. Afterward, you drove me to catch my bus back to Hanoi, and surprised me with a beautiful outfit you had ordered for me. 
-                  </p>
-                  <p>
-                    Meeting your family for the first time was daunting, but everything went wonderfully. It warmed my heart to feel that they liked me too.
-                  </p>
+                  <p>{t.p1}</p>
+                  <p>{t.p2}</p>
+                  <p>{t.p3}</p>
+                  <p>{t.p4}</p>
                </div>
             </div>
           </motion.div>
@@ -231,7 +236,8 @@ const ChapterTwoPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => 
   );
 };
 
-const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+  const t = translations[lang].popups.stats;
   return (
     <AnimatePresence>
       {isOpen && (
@@ -276,8 +282,8 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
             
             <div className="p-6 md:p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl relative z-20">
               <div>
-                <h2 className="font-headline text-2xl md:text-3xl text-primary">Our Digital Connection</h2>
-                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">Jan 25, 2026 – Apr 26, 2026 <span className="opacity-70">(92 days)</span></p>
+                <h2 className="font-headline text-2xl md:text-3xl text-primary">{t.title}</h2>
+                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">{t.dateDesc}<span className="opacity-70">{t.daysSuffix}</span></p>
               </div>
               <button 
                 onClick={onClose}
@@ -294,10 +300,10 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  { label: 'Active Days', value: '89', sub: '~71.9/day' },
-                  { label: 'Text Messages', value: '5,568', sub: 'Words of love' },
-                  { label: 'Links Shared', value: '162', sub: 'Memes & songs' },
-                  { label: 'Deleted', value: '32', sub: 'Oops moments' }
+                  { label: t.labels.activeDays, value: '89', sub: t.labels.subDays },
+                  { label: t.labels.textMsg, value: '5,568', sub: t.labels.subMsg },
+                  { label: t.labels.links, value: '162', sub: t.labels.subLinks },
+                  { label: t.labels.deleted, value: '32', sub: t.labels.subDeleted }
                 ].map((stat, i) => (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }}
@@ -332,7 +338,7 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="flex justify-between items-end mb-4 relative z-10">
                     <div>
                       <h3 className="font-display text-2xl text-secondary mb-1">Trường Anim</h3>
-                      <p className="text-sm text-secondary/70 font-semibold tracking-wider">52% CONTRIBUTION</p>
+                      <p className="text-sm text-secondary/70 font-semibold tracking-wider">52% {t.contrib}</p>
                     </div>
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary shadow-lg">
                        <img src="https://love-note.earth.io.vn/images/672394217_946668514823940_3684029729342554678_n.jpg" alt="Truong" className="w-full h-full object-cover" />
@@ -346,15 +352,15 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="grid grid-cols-3 gap-2 text-center relative z-10">
                     <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
                       <p className="font-display text-xl text-on-surface mb-1">3,307</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Messages</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.msg}</p>
                     </div>
                     <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
                       <p className="font-display text-xl text-on-surface mb-1">1,204</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Given Reacts</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.given}</p>
                     </div>
                     <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
                       <p className="font-display text-xl text-on-surface mb-1">288</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Got Reacts</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.got}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -373,7 +379,7 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="flex justify-between items-end mb-4 relative z-10">
                     <div>
                       <h3 className="font-display text-2xl text-primary mb-1">Bích Ngọc</h3>
-                      <p className="text-sm text-primary/70 font-semibold tracking-wider">48% CONTRIBUTION</p>
+                      <p className="text-sm text-primary/70 font-semibold tracking-wider">48% {t.contrib}</p>
                     </div>
                     <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary shadow-lg">
                        <img src="https://love-note.earth.io.vn/images/641226165_1911914302770064_335593052087986292_n.jpg" alt="Ngoc" className="w-full h-full object-cover" />
@@ -387,15 +393,15 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
                   <div className="grid grid-cols-3 gap-2 text-center relative z-10">
                     <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
                       <p className="font-display text-xl text-on-surface mb-1">3,094</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Messages</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.msg}</p>
                     </div>
                     <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
                       <p className="font-display text-xl text-on-surface mb-1">288</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Given Reacts</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.given}</p>
                     </div>
                     <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
                       <p className="font-display text-xl text-on-surface mb-1">1,204</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">Got Reacts</p>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.got}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -410,7 +416,8 @@ const StatsPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void 
   );
 };
 
-const MemoriesPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
+const MemoriesPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+  const t = translations[lang];
   return (
     <AnimatePresence>
       {isOpen && (
@@ -429,8 +436,8 @@ const MemoriesPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => vo
           >
             <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl">
               <div>
-                <h2 className="font-headline text-3xl text-primary">All Our Memories</h2>
-                <p className="text-on-surface-variant font-body mt-1">A complete archive of our shared journey.</p>
+                <h2 className="font-headline text-3xl text-primary">{t.popups.memories.title}</h2>
+                <p className="text-on-surface-variant font-body mt-1">{t.popups.memories.desc}</p>
               </div>
               <button 
                 onClick={onClose}
@@ -448,7 +455,7 @@ const MemoriesPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => vo
                 {/* Central Timeline Line */}
                 <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/20 hidden md:block" />
 
-                {ALL_MILESTONES.map((m, idx) => (
+                {getMilestones(lang).map((m, idx) => (
                   <motion.div 
                     key={m.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -495,7 +502,8 @@ const MemoriesPopup = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => vo
   );
 };
 
-const Navbar = () => {
+const Navbar = ({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) => {
+  const t = translations[lang];
   const [showLinks, setShowLinks] = useState<string | null>(null);
 
   const socialLinks = {
@@ -511,11 +519,11 @@ const Navbar = () => {
         </div>
         <nav className="hidden md:flex gap-8">
           {[
-            { label: 'Home', id: 'hero' }, 
-            { label: 'Memories', id: 'milestones' }, 
-            { label: 'Confessions', id: 'confessions' }, 
-            { label: 'Cinema', id: 'cinema' }, 
-            { label: 'Journey', id: 'stats' }
+            { label: t.nav.home, id: 'hero' }, 
+            { label: t.nav.memories, id: 'milestones' }, 
+            { label: t.nav.confessions, id: 'confessions' }, 
+            { label: t.nav.cinema, id: 'cinema' }, 
+            { label: t.nav.journey, id: 'stats' }
           ].map((item) => (
             <a 
               key={item.id}
@@ -528,6 +536,17 @@ const Navbar = () => {
         </nav>
         
         <div className="flex items-center gap-3 relative">
+          <button 
+            onClick={() => setLang(lang === 'en' ? 'zh' : 'en')}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant/30 hover:bg-surface-variant transition-colors overflow-hidden"
+            aria-label="Toggle language"
+          >
+            {lang === 'en' ? (
+              <span className="text-xl leading-none" role="img" aria-label="Chinese flag">🇨🇳</span>
+            ) : (
+              <span className="text-xl leading-none" role="img" aria-label="UK flag">🇬🇧</span>
+            )}
+          </button>
           <div className="flex -space-x-3 hover:space-x-1 transition-all duration-300">
             {/* Truong Anim Avatar */}
             <button 
@@ -553,7 +572,7 @@ const Navbar = () => {
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 className="absolute top-full right-0 mt-4 bg-white/80 backdrop-blur-xl border border-outline-variant/20 p-4 rounded-2xl ethereal-shadow min-w-[200px]"
               >
-                <p className="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">Connect with {socialLinks[showLinks as keyof typeof socialLinks].name}</p>
+                <p className="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">{t.socials.connectWith} {socialLinks[showLinks as keyof typeof socialLinks].name}</p>
                 <a 
                   href={socialLinks[showLinks as keyof typeof socialLinks].fb} 
                   target="_blank" 
@@ -563,7 +582,7 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                     <span className="font-bold text-lg">f</span>
                   </div>
-                  <span className="text-sm font-medium text-on-surface group-hover:text-primary">Facebook Profile</span>
+                  <span className="text-sm font-medium text-on-surface group-hover:text-primary">{t.socials.fbProfile}</span>
                 </a>
               </motion.div>
             )}
@@ -595,6 +614,7 @@ const SideNav = ({ activeSection }: { activeSection: string }) => {
 };
 
 export default function App() {
+  const [lang, setLang] = useState<Lang>('en');
   const [activeSection, setActiveSection] = useState('hero');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isChapterOnePopupOpen, setIsChapterOnePopupOpen] = useState(false);
@@ -603,6 +623,8 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
+  
+  const t = translations[lang];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -651,12 +673,12 @@ export default function App() {
 
   return (
     <div className="relative bg-surface text-on-surface font-body overflow-hidden">
-      <Navbar />
+      <Navbar lang={lang} setLang={setLang} />
       <SideNav activeSection={activeSection} />
-      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
-      <ChapterOnePopup isOpen={isChapterOnePopupOpen} onClose={() => setIsChapterOnePopupOpen(false)} />
-      <ChapterTwoPopup isOpen={isChapterTwoPopupOpen} onClose={() => setIsChapterTwoPopupOpen(false)} />
-      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} />
+      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} />
+      <ChapterOnePopup isOpen={isChapterOnePopupOpen} onClose={() => setIsChapterOnePopupOpen(false)} lang={lang} />
+      <ChapterTwoPopup isOpen={isChapterTwoPopupOpen} onClose={() => setIsChapterTwoPopupOpen(false)} lang={lang} />
+      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} />
 
       <main ref={containerRef} className="snap-container">
         {/* SECTION 1: HERO */}
@@ -668,22 +690,22 @@ export default function App() {
             transition={{ duration: 1, ease: "easeOut" }}
             className="max-w-4xl text-center z-10 flex flex-col items-center gap-6 px-6"
           >
-            <span className="font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">The Beginning</span>
+            <span className="font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">{t.hero.beginning}</span>
             <h1 className="font-headline text-6xl md:text-8xl text-primary tracking-tight leading-tight">
-              A Journey <br/><span className="italic font-light text-on-surface">of Us</span>
+              {t.hero.titleP1} <br/><span className="italic font-light text-on-surface">{t.hero.titleP2}</span>
             </h1>
             <p className="font-body text-xl md:text-2xl text-on-surface-variant max-w-2xl mt-4 leading-relaxed">
-              Truong Anim & Bich Ngoc
+              {t.hero.subtitle}
             </p>
             <div className="mt-12 glass-panel p-8 rounded-xl ethereal-shadow max-w-lg relative overflow-hidden backdrop-blur-2xl">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container/20 rounded-full blur-3xl shadow-none" />
               <p className="italic font-headline text-on-surface leading-loose text-center opacity-90 relative z-10">
-                "In the vastness of time and space, finding you was the serendipity that gave my universe color."
+                {t.hero.quote}
               </p>
             </div>
             
             <div className="absolute bottom-12 flex flex-col items-center gap-2 animate-bounce opacity-50">
-              <span className="font-label text-xs tracking-widest uppercase mb-1">Descend</span>
+              <span className="font-label text-xs tracking-widest uppercase mb-1">{t.hero.descend}</span>
               <ChevronDown className="text-primary w-6 h-6" />
             </div>
           </motion.div>
@@ -693,15 +715,15 @@ export default function App() {
         <section id="milestones" className="snap-section bg-surface-container-low px-6 md:px-12 py-24">
           <div className="max-w-5xl w-full flex flex-col lg:flex-row gap-16 items-start">
             <div className="lg:w-1/3 flex flex-col gap-4 sticky top-32">
-              <h2 className="font-headline text-4xl md:text-5xl text-primary">Milestones</h2>
+              <h2 className="font-headline text-4xl md:text-5xl text-primary">{t.milestones.title}</h2>
               <p className="font-body text-on-surface-variant text-lg leading-relaxed max-w-sm">
-                Every moment documented, every memory cherished. The chapters of our ethereal manuscript.
+                {t.milestones.subtitle}
               </p>
               <button 
                 onClick={() => setIsPopupOpen(true)}
                 className="mt-6 flex items-center gap-2 text-primary font-bold group w-fit"
               >
-                <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">See All Memories</span>
+                <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{t.milestones.seeAll}</span>
                 <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
               </button>
             </div>
@@ -709,7 +731,7 @@ export default function App() {
               {/* Central Timeline Line */}
               <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/30 hidden md:block" />
               
-              {ALL_MILESTONES.filter((m) => m.isHighlight).map((m, idx) => (
+              {getMilestones(lang).filter((m) => m.isHighlight).map((m, idx) => (
                 <motion.div 
                   key={m.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -779,8 +801,8 @@ export default function App() {
                         <Heart className="text-white w-5 h-5 fill-current" />
                       </motion.div>
                       <div>
-                        <p className="text-white text-sm font-medium">A Rainy First Date</p>
-                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">Hanoi, Mar 28, 2026</p>
+                        <p className="text-white text-sm font-medium">{t.confessions.vidTag}</p>
+                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">{t.confessions.vidDate}</p>
                       </div>
                     </div>
                   </div>
@@ -793,14 +815,14 @@ export default function App() {
               className="lg:col-span-7 space-y-8"
             >
               <div>
-                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">Chapter I: The Encounter</span>
+                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">{t.confessions.tag}</span>
                 <h1 className="font-display text-5xl md:text-7xl text-on-surface leading-[1.1] mb-6">
-                  Our First <br/>
-                  <span className="italic text-primary">Adventure</span>
+                  {t.confessions.titleP1}<br/>
+                  <span className="italic text-primary">{t.confessions.titleP2}</span>
                 </h1>
               </div>
               <p className="font-body text-lg md:text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-xl">
-                It was a weekend in March when our story truly began. Despite the pouring rain, we wandered through Hanoi, sharing laughter over arcade games and a memorable midnight ride home. A perfect memory etched in time.
+                {t.confessions.desc}
               </p>
               <div className="flex flex-wrap gap-8 items-center pt-4">
                 <a 
@@ -809,13 +831,13 @@ export default function App() {
                   rel="noopener noreferrer"
                   className="primary-gradient-glow text-white px-10 py-4 rounded-full font-semibold hover:shadow-[0_0_30px_rgba(188,0,79,0.3)] transition-all inline-block"
                 >
-                  Comment
+                  {t.confessions.comment}
                 </a>
                 <button 
                   onClick={() => setIsChapterOnePopupOpen(true)}
                   className="flex items-center gap-3 text-primary font-bold group cursor-pointer"
                 >
-                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">See All</span>
+                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{t.confessions.seeAll}</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -833,14 +855,14 @@ export default function App() {
               className="lg:col-span-7 space-y-8 order-2 lg:order-1"
             >
               <div>
-                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">Chapter II: The Family</span>
+                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">{t.cinema.tag}</span>
                 <h2 className="font-headline text-5xl md:text-7xl text-on-surface leading-[1.1] mb-6">
-                  Meeting <br/>
-                  <span className="italic text-primary">The Family</span>
+                  {t.cinema.titleP1}<br/>
+                  <span className="italic text-primary">{t.cinema.titleP2}</span>
                 </h2>
               </div>
               <p className="font-body text-lg md:text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-xl">
-                The weekend of April 11th brought a new milestone: meeting your family. From a quiet walk along the dike where we first held hands, to a bustling, warm family lunch.
+                {t.cinema.desc}
               </p>
               <div className="flex flex-wrap gap-8 items-center pt-4">
                 <a 
@@ -849,13 +871,13 @@ export default function App() {
                   rel="noopener noreferrer"
                   className="primary-gradient-glow text-white px-10 py-4 rounded-full font-semibold hover:shadow-[0_0_30px_rgba(188,0,79,0.3)] transition-all inline-block"
                 >
-                  Comment
+                  {t.confessions.comment}
                 </a>
                 <button 
                   onClick={() => setIsChapterTwoPopupOpen(true)}
                   className="flex items-center gap-3 text-primary font-bold group cursor-pointer"
                 >
-                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">Read More</span>
+                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{t.cinema.readMore}</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -892,8 +914,8 @@ export default function App() {
                         <Heart className="text-white w-5 h-5 fill-current" />
                       </motion.div>
                       <div>
-                        <p className="text-white text-sm font-medium">Meeting the Family</p>
-                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">Hometown, Apr 11, 2026</p>
+                        <p className="text-white text-sm font-medium">{t.cinema.vidTag}</p>
+                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">{t.cinema.vidDate}</p>
                       </div>
                     </div>
                   </div>
@@ -911,9 +933,9 @@ export default function App() {
           
           <div className="max-w-6xl w-full z-10 flex flex-col items-center gap-10">
             <div className="text-center">
-              <span className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-4 block font-semibold">By The Numbers</span>
+              <span className="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant mb-4 block font-semibold">{t.stats.tag}</span>
               <h2 className="font-headline text-5xl md:text-6xl text-primary tracking-tight mb-8">
-                The Metrics of <span className="italic font-light">Us</span>
+                {t.stats.titleP1}<span className="italic font-light">{t.stats.titleP2}</span>
               </h2>
               <button 
                 onClick={() => setIsStatsPopupOpen(true)}
@@ -922,13 +944,13 @@ export default function App() {
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                 <span className="relative flex items-center gap-3">
                   <Heart className="w-4 h-4 fill-current text-white" />
-                  View Detailed Stats
+                  {t.stats.viewDetailed}
                 </span>
               </button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-              {STATS.map((stat, idx) => (
+              {getStats(lang).map((stat, idx) => (
                 <motion.div 
                   key={stat.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -1017,26 +1039,26 @@ export default function App() {
               whileInView={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <span className="font-label text-xs uppercase tracking-[0.4em] text-primary font-bold">The Infinite Chapter</span>
+              <span className="font-label text-xs uppercase tracking-[0.4em] text-primary font-bold">{t.continuation.tag}</span>
               <h2 className="font-headline text-5xl md:text-7xl text-on-surface">
-                To Be <span className="italic font-light">Continued...</span>
+                {t.continuation.titleP1}<span className="italic font-light">{t.continuation.titleP2}</span>
               </h2>
               <p className="font-body text-xl text-on-surface-variant max-w-xl mx-auto leading-relaxed">
-                As long as the stars find the night, or the ocean seeks the shore, our ethereal manuscript will never reach its final page.
+                {t.continuation.desc}
               </p>
             </motion.div>
           </div>
 
           <footer className="absolute bottom-0 w-full py-12 flex flex-col items-center justify-center gap-6 bg-transparent z-20">
             <div className="flex gap-10">
-              {['Forever', 'Always', 'Together'].map(word => (
+              {[t.footerLinks.forever, t.footerLinks.always, t.footerLinks.together].map(word => (
                  <a key={word} href="#" className="font-label text-[10px] tracking-[0.3em] uppercase text-on-surface-variant/50 hover:text-primary hover:opacity-100 transition-all font-bold">
                     {word}
                  </a>
               ))}
             </div>
             <div className="font-label text-[10px] tracking-[0.1em] uppercase text-on-surface-variant/30 text-center">
-              A Digital Sanctuary for Our Love © 2026
+              {t.continuation.footer}
             </div>
           </footer>
         </section>
