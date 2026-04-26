@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Noto Serif", serif;
+  --font-display: "Noto Serif", serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-label: "Plus Jakarta Sans", sans-serif;
+
+  --color-primary: #bc004f;
+  --color-primary-container: #ff5484;
+  --color-primary-fixed: #ffd9de;
+  --color-secondary: #964261;
+  --color-secondary-container: #fe97b9;
+  --color-tertiary: #a82d68;
+  --color-background: #faf9f6;
+  --color-surface: #faf9f6;
+  --color-surface-container: #efeeeb;
+  --color-surface-container-low: #f4f3f1;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-variant: #e3e2e0;
+  --color-on-surface: #1a1c1a;
+  --color-on-surface-variant: #574146;
+  --color-outline-variant: #ddbfc5;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-on-surface font-body;
+    background-image: radial-gradient(var(--color-outline-variant) 0.5px, transparent 0.5px);
+    background-size: 40px 40px;
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface-variant/60 backdrop-blur-xl border border-outline-variant/15;
+  }
+
+  .primary-gradient-glow {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-container));
+  }
+
+  .ethereal-shadow {
+    box-shadow: 0px 20px 40px rgba(26, 28, 26, 0.06);
+  }
+
+  .snap-container {
+    @apply h-screen overflow-y-auto scroll-smooth;
+    scroll-snap-type: y mandatory;
+  }
+
+  .snap-section {
+    @apply h-screen w-full relative flex items-center justify-center;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
