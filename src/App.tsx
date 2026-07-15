@@ -20,9 +20,18 @@ import { Heart,
   Image as ImageIcon
 } from 'lucide-react';
 import { translations, Lang } from './translations';
+import { fetchMilestones, MilestoneDoc, MilestoneIcon } from './services/milestones';
 
 // --- Types ---
-interface Milestone {
+interface Stat {
+  id: string;
+  value: string;
+  label: string;
+  icon: React.ReactNode;
+  bgClass?: string;
+}
+
+interface LocalizedMilestone {
   id: string;
   date: string;
   title: string;
@@ -32,87 +41,24 @@ interface Milestone {
   isHighlight?: boolean;
 }
 
-interface Stat {
-  id: string;
-  value: string;
-  label: string;
-  icon: React.ReactNode;
-  bgClass?: string;
-}
+const MILESTONE_ICONS: Record<MilestoneIcon, React.ReactNode> = {
+  heart: <Heart className="w-5 h-5" />,
+  message: <MessageCircle className="w-5 h-5" />,
+  sparkles: <Sparkles className="w-5 h-5" />
+};
+
+const localizeMilestones = (docs: MilestoneDoc[], lang: Lang): LocalizedMilestone[] =>
+  docs.map((m) => ({
+    id: m.id,
+    date: m.date,
+    title: m.title[lang],
+    description: m.description[lang],
+    image: m.image,
+    icon: MILESTONE_ICONS[m.icon],
+    isHighlight: m.isHighlight
+  }));
 
 // --- Data ---
-const ALL_MILESTONES: Milestone[] = [
-  {
-    id: 'm1',
-    date: 'November 25, 2025',
-    title: 'Admiration from Afar',
-    description: 'Ms. Chinh introduced her to me. Looking at her Facebook, she seemed so positive and cheerful. I gathered my courage to send a friend request, and luckily, she accepted it.',
-    icon: <Heart className="w-5 h-5" />
-  },
-  {
-    id: 'm2',
-    date: 'January 25, 2026',
-    title: 'The First Message',
-    description: 'After two months of just admiring her from afar and "hearting" all her stories, I finally dared to reply to one. I was so shy and didn\'t know what to say, but fortunately, she was very open and easy to talk to.',
-    icon: <MessageCircle className="w-5 h-5" />
-  },
-  {
-    id: 'm3',
-    date: 'February 1, 2026',
-    title: 'The First Encounter',
-    description: 'I traveled from Hanoi to my hometown to meet her. We went to the market together. She looked like a radiant sunflower, warming up the chilly early winter weather. She invited me to try "Bánh Tẻ"—a hometown specialty—and then we sat together sipping coffee, cracking sunflower seeds in the cold breeze.',
-    image: 'https://love-note.earth.io.vn/images/a1e43e88-c2af-4873-b418-418c0be65bd8.jpg',
-    icon: <Heart className="w-5 h-5" />,
-    isHighlight: true
-  },
-  {
-    id: 'm4',
-    date: 'February 14, 2026',
-    title: 'First Time Giving Flowers',
-    description: 'Valentine\'s Day. I bought a large basket of roses and a cute little gift for her. When I arrived, there were many relatives wrapping Chung cake. Standing at her door with the flowers, I felt incredibly shy. We went out for drinks and took photos at the square. The New Year atmosphere was drawing near.',
-    icon: <Sparkles className="w-5 h-5" />
-  },
-  {
-    id: 'm5',
-    date: 'February 16, 2026',
-    title: 'New Year\'s Eve Together',
-    description: 'I asked her to watch the NYE fireworks. She hesitated at first because she wanted to spend New Year\'s Eve with her parents, but eventually agreed to go with me. We watched the fireworks at the square, welcoming the new year with beautiful wishes.',
-    image: 'https://love-note.earth.io.vn/images/c96f0d97-ed33-487a-8341-ce94235f734a.jpg',
-    icon: <Sparkles className="w-5 h-5" />,
-    isHighlight: true
-  },
-  {
-    id: 'm6',
-    date: 'February 17, 2026',
-    title: 'Visiting Her Home',
-    description: 'Early in the Lunar New Year, right after midnight, I drove her home and came inside to visit. I met her dad, and he offered me a can of beer. He seemed very cheerful, and I had a feeling he liked me too.',
-    icon: <Heart className="w-5 h-5" />
-  },
-  {
-    id: 'm7',
-    date: 'February 19, 2026',
-    title: 'Visiting Hung Temple',
-    description: 'We visited Hung Temple together for the new year. We climbed the steps and lit incense at the Lower, Middle, Upper, and Well temples, praying for a happy and peaceful year ahead.',
-    image: 'https://love-note.earth.io.vn/images/344cf8fa-c806-46ff-aa0b-90af2bb3330f.jpg',
-    icon: <Heart className="w-5 h-5" />,
-    isHighlight: true
-  },
-  {
-    id: 'm8',
-    date: 'March 2, 2026',
-    title: 'Planning Our Getaway',
-    description: 'We often call each other at night, sharing travel memories. On March 2nd, I asked her to go to Da Nang with me. Instead of being worried, she was very enthusiastic about the plan. She searched for flight prices, travel combos, everything, which surprised me quite a bit. By March 5th, we had paid a deposit for a 4-day, 3-night tour to a beautiful coastal city. Both of us are eagerly waiting for the holiday.',
-    icon: <Sparkles className="w-5 h-5" />
-  },
-  {
-    id: 'm9',
-    date: 'March 8, 2026',
-    title: 'International Women\'s Day',
-    description: 'It was Sunday, I went back to my hometown for a wedding. By evening, I went to buy a large basket of flowers, along with a Bluetooth headphone and a sleep mask. I chose these two gifts very carefully, hoping she would like them. Then I went to her house to give her the flowers. We went to eat a buffet at Manwah together, and then watched the movie "Thỏ". The psychological and romantic movie made both of us think quite a bit.',
-    icon: <Heart className="w-5 h-5" />
-  }
-];
-
 const STATS: Stat[] = [
   { id: 's1', value: '92', label: 'Days Together', icon: <CalendarDays />, bgClass: 'bg-secondary-container/20' },
   { id: 's2', value: '6,401', label: 'Messages Exchanged', icon: <MessageCircle /> },
@@ -125,15 +71,6 @@ const getStats = (lang: Lang): Stat[] => {
   return STATS.map((s, idx) => ({
     ...s,
     label: idx === 0 ? t.days : idx === 1 ? t.messages : idx === 2 ? t.reactions : t.media
-  }));
-};
-
-const getMilestones = (lang: Lang): Milestone[] => {
-  return ALL_MILESTONES.map((m, index) => ({
-    ...m,
-    date: translations[lang].allMilestones[index].date,
-    title: translations[lang].allMilestones[index].title,
-    description: translations[lang].allMilestones[index].description,
   }));
 };
 
@@ -416,7 +353,7 @@ const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () =>
   );
 };
 
-const MemoriesPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+const MemoriesPopup = ({ isOpen, onClose, lang, milestones }: { isOpen: boolean, onClose: () => void, lang: Lang, milestones: LocalizedMilestone[] }) => {
   const t = translations[lang];
   return (
     <AnimatePresence>
@@ -455,7 +392,7 @@ const MemoriesPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: ()
                 {/* Central Timeline Line */}
                 <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/20 hidden md:block" />
 
-                {getMilestones(lang).map((m, idx) => (
+                {milestones.map((m, idx) => (
                   <motion.div 
                     key={m.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -623,8 +560,14 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const video1Ref = useRef<HTMLVideoElement>(null);
   const video2Ref = useRef<HTMLVideoElement>(null);
-  
+  const [milestoneDocs, setMilestoneDocs] = useState<MilestoneDoc[]>([]);
+
   const t = translations[lang];
+  const milestones = localizeMilestones(milestoneDocs, lang);
+
+  useEffect(() => {
+    fetchMilestones().then(setMilestoneDocs).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -675,7 +618,7 @@ export default function App() {
     <div className="relative bg-surface text-on-surface font-body overflow-hidden">
       <Navbar lang={lang} setLang={setLang} />
       <SideNav activeSection={activeSection} />
-      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} />
+      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} milestones={milestones} />
       <ChapterOnePopup isOpen={isChapterOnePopupOpen} onClose={() => setIsChapterOnePopupOpen(false)} lang={lang} />
       <ChapterTwoPopup isOpen={isChapterTwoPopupOpen} onClose={() => setIsChapterTwoPopupOpen(false)} lang={lang} />
       <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} />
@@ -731,7 +674,7 @@ export default function App() {
               {/* Central Timeline Line */}
               <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/30 hidden md:block" />
               
-              {getMilestones(lang).filter((m) => m.isHighlight).map((m, idx) => (
+              {milestones.filter((m) => m.isHighlight).map((m, idx) => (
                 <motion.div 
                   key={m.id}
                   initial={{ opacity: 0, y: 30 }}
