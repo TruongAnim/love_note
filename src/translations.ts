@@ -67,53 +67,6 @@ export const translations = {
       always: 'Always',
       together: 'Together'
     },
-    allMilestones: [
-      {
-        date: 'November 25, 2025',
-        title: 'Admiration from Afar',
-        description: 'Ms. Chinh introduced her to me. Looking at her Facebook, she seemed so positive and cheerful. I gathered my courage to send a friend request, and luckily, she accepted it.',
-      },
-      {
-        date: 'January 25, 2026',
-        title: 'The First Message',
-        description: 'After two months of just admiring her from afar and "hearting" all her stories, I finally dared to reply to one. I was so shy and didn\'t know what to say, but fortunately, she was very open and easy to talk to.',
-      },
-      {
-        date: 'February 1, 2026',
-        title: 'The First Encounter',
-        description: 'I traveled from Hanoi to my hometown to meet her. We went to the market together. She looked like a radiant sunflower, warming up the chilly early winter weather. She invited me to try "Bánh Tẻ"—a hometown specialty—and then we sat together sipping coffee, cracking sunflower seeds in the cold breeze.',
-      },
-      {
-        date: 'February 14, 2026',
-        title: 'First Time Giving Flowers',
-        description: 'Valentine\'s Day. I bought a large basket of roses and a cute little gift for her. When I arrived, there were many relatives wrapping Chung cake. Standing at her door with the flowers, I felt incredibly shy. We went out for drinks and took photos at the square. The New Year atmosphere was drawing near.',
-      },
-      {
-        date: 'February 16, 2026',
-        title: 'New Year\'s Eve Together',
-        description: 'I asked her to watch the NYE fireworks. She hesitated at first because she wanted to spend New Year\'s Eve with her parents, but eventually agreed to go with me. We watched the fireworks at the square, welcoming the new year with beautiful wishes.',
-      },
-      {
-        date: 'February 17, 2026',
-        title: 'Visiting Her Home',
-        description: 'Early in the Lunar New Year, right after midnight, I drove her home and came inside to visit. I met her dad, and he offered me a can of beer. He seemed very cheerful, and I had a feeling he liked me too.',
-      },
-      {
-        date: 'February 19, 2026',
-        title: 'Visiting Hung Temple',
-        description: 'We visited Hung Temple together for the new year. We climbed the steps and lit incense at the Lower, Middle, Upper, and Well temples, praying for a happy and peaceful year ahead.',
-      },
-      {
-        date: 'March 2, 2026',
-        title: 'Planning Our Getaway',
-        description: 'We often call each other at night, sharing travel memories. On March 2nd, I asked her to go to Da Nang with me. Instead of being worried, she was very enthusiastic about the plan. She searched for flight prices, travel combos, everything, which surprised me quite a bit. By March 5th, we had paid a deposit for a 4-day, 3-night tour to a beautiful coastal city. Both of us are eagerly waiting for the holiday.',
-      },
-      {
-        date: 'March 8, 2026',
-        title: 'International Women\'s Day',
-        description: 'It was Sunday, I went back to my hometown for a wedding. By evening, I went to buy a large basket of flowers, along with a Bluetooth headphone and a sleep mask. I chose these two gifts very carefully, hoping she would like them. Then I went to her house to give her the flowers. We went to eat a buffet at Manwah together, and then watched the movie "Thỏ". The psychological and romantic movie made both of us think quite a bit.',
-      }
-    ],
     popups: {
       memories: {
         title: 'All Our Memories',
@@ -217,53 +170,6 @@ export const translations = {
       always: '始终',
       together: '在一起'
     },
-    allMilestones: [
-      {
-        date: '2025年11月25日',
-        title: '默默欣赏',
-        description: 'Chinh 老师把她介绍给了我。看她的 Facebook，她看起来那么积极开朗。我鼓起勇气发送了好友请求，幸运的是，她接受了。',
-      },
-      {
-        date: '2026年1月25日',
-        title: '第一条信息',
-        description: '在只是默默欣赏并给她所有的动态点赞两个月后，我终于敢回复其中一条了。我很害羞，不知道该说什么，但幸运的是，她非常开朗，很容易聊天。',
-      },
-      {
-        date: '2026年2月1日',
-        title: '初次相遇',
-        description: '我从河内回老家见她。我们一起去逛街。她看起来像一朵灿烂的向日葵，温暖了初冬寒冷的天气。她请我品尝了“Bánh Tẻ”（一种家乡特产），然后我们坐在一起喝咖啡，在寒风中嗑瓜子。',
-      },
-      {
-        date: '2026年2月14日',
-        title: '第一次送花',
-        description: '情人节。我给她买了一大篮玫瑰和一个可爱的小礼物。当我到达时，有许多亲戚在包粽子 (Chưng cake)。站在她家门口拿着花，我感到非常害羞。我们出去喝了点东西，并在广场拍了照片。新年的气氛越来越浓了。',
-      },
-      {
-        date: '2026年2月16日',
-        title: '共度除夕',
-        description: '我约她去看除夕跨年烟花。她一开始很犹豫，因为她想和父母一起过除夕，但最终同意和我一起去。我们在广场看烟花，带着美好的祝愿迎接新的一年。',
-      },
-      {
-        date: '2026年2月17日',
-        title: '拜访她家',
-        description: '农历新年伊始，午夜刚过，我开车送她回家并进去拜访。我见到了她爸爸，他给了我一罐啤酒。他看起来非常高兴，我有一种感觉他也喜欢我。',
-      },
-      {
-        date: '2026年2月19日',
-        title: '游览雄王庙 (Hung Temple)',
-        description: '新年我们一起去游览了雄王庙。我们爬上台阶，在下庙、中庙、上庙和井庙上香，祈求未来一年幸福平安。',
-      },
-      {
-        date: '2026年3月2日',
-        title: '计划我们的旅行',
-        description: '我们经常在晚上互相打电话，分享旅行的记忆。3月2日，我约她和我一起去岘港 (Da Nang)。她没有担心，反而对这个计划非常热情。她搜索了航班价格、旅行套餐等所有信息，这让我非常惊讶。到了3月5日，我们已经为去那座美丽的海滨城市的四天三夜游付了订金。我们俩都热切地期待着假期的到来。',
-      },
-      {
-        date: '2026年3月8日',
-        title: '国际妇女节',
-        description: '那是星期天，我回老家参加婚礼。到了晚上，我去买了一大篮花，还有一个蓝牙耳机和一个睡眠眼罩。我非常用心挑选了这两件礼物，希望能得到她的喜欢。然后我去她家送花。我们一起去 Manwah 吃自助餐，然后看了电影《Thỏ》。这部有点心理和浪漫元素的电影让我们两人都有了许多感触。',
-      }
-    ],
     popups: {
       memories: {
         title: '所有回忆',
