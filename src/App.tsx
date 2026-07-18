@@ -21,6 +21,7 @@ import { Heart,
 } from 'lucide-react';
 import { translations, Lang } from './translations';
 import { fetchMilestones, MilestoneDoc, MilestoneIcon, SpecialLayout } from './services/milestones';
+import { fetchSiteConfig, SiteConfigDoc, StatIcon, PersonDoc } from './services/config';
 
 // --- Types ---
 interface Stat {
@@ -30,6 +31,13 @@ interface Stat {
   icon: React.ReactNode;
   bgClass?: string;
 }
+
+const STAT_ICONS: Record<StatIcon, React.ReactNode> = {
+  calendar: <CalendarDays />,
+  message: <MessageCircle />,
+  heart: <Heart />,
+  image: <ImageIcon />
+};
 
 interface LocalizedMilestone {
   id: string;
@@ -124,21 +132,14 @@ const toMemoryEntries = (docs: MilestoneDoc[], lang: Lang): MemoryEntry[] =>
       : { kind: 'regular' as const, data: localizeMilestone(d, lang) }
   );
 
-// --- Data ---
-const STATS: Stat[] = [
-  { id: 's1', value: '92', label: 'Days Together', icon: <CalendarDays />, bgClass: 'bg-secondary-container/20' },
-  { id: 's2', value: '6,401', label: 'Messages Exchanged', icon: <MessageCircle /> },
-  { id: 's3', value: '1,492', label: 'Reactions', icon: <Heart /> },
-  { id: 's4', value: '639', label: 'Media Shared', icon: <ImageIcon />, bgClass: 'bg-primary-fixed/30' }
-];
-
-const getStats = (lang: Lang): Stat[] => {
-  const t = translations[lang].stats;
-  return STATS.map((s, idx) => ({
-    ...s,
-    label: idx === 0 ? t.days : idx === 1 ? t.messages : idx === 2 ? t.reactions : t.media
+const getStats = (config: SiteConfigDoc | null, lang: Lang): Stat[] =>
+  (config?.stats.summary ?? []).map((s) => ({
+    id: s.id,
+    value: s.value,
+    label: s.label[lang],
+    icon: STAT_ICONS[s.icon],
+    bgClass: s.bgClass
   }));
-};
 
 // --- Components ---
 
@@ -187,8 +188,33 @@ const StoryPopup = ({ story, onClose }: { story: StoryView | null, onClose: () =
   );
 };
 
-const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
+/** Full class strings per accent so Tailwind can see them at build time. */
+const ACCENT_STYLES = {
+  secondary: {
+    card: 'bg-secondary-container/20 border-secondary/20 hover:!border-secondary/40',
+    watermark: 'text-secondary rotate-12',
+    name: 'text-secondary',
+    percent: 'text-secondary/70',
+    avatarBorder: 'border-secondary',
+    track: 'bg-secondary/20',
+    bar: 'bg-secondary',
+    tile: 'border-secondary/10'
+  },
+  primary: {
+    card: 'bg-primary/5 border-primary/20 hover:!border-primary/40',
+    watermark: 'text-primary -rotate-12',
+    name: 'text-primary',
+    percent: 'text-primary/70',
+    avatarBorder: 'border-primary',
+    track: 'bg-primary/20',
+    bar: 'bg-primary',
+    tile: 'border-primary/10'
+  }
+} as const;
+
+const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClose: () => void, lang: Lang, config: SiteConfigDoc | null }) => {
   const t = translations[lang].popups.stats;
+  const peopleById = new Map((config?.people ?? []).map((p) => [p.id, p]));
   return (
     <AnimatePresence>
       {isOpen && (
@@ -234,7 +260,7 @@ const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () =>
             <div className="p-6 md:p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl relative z-20">
               <div>
                 <h2 className="font-headline text-2xl md:text-3xl text-primary">{t.title}</h2>
-                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">{t.dateDesc}<span className="opacity-70">{t.daysSuffix}</span></p>
+                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">{config?.stats.period[lang]}<span className="opacity-70">{config?.stats.periodDays[lang]}</span></p>
               </div>
               <button 
                 onClick={onClose}
@@ -250,113 +276,77 @@ const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () =>
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative z-20 space-y-8">
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { label: t.labels.activeDays, value: '89', sub: t.labels.subDays },
-                  { label: t.labels.textMsg, value: '5,568', sub: t.labels.subMsg },
-                  { label: t.labels.links, value: '162', sub: t.labels.subLinks },
-                  { label: t.labels.deleted, value: '32', sub: t.labels.subDeleted }
-                ].map((stat, i) => (
-                  <motion.div 
+                {(config?.stats.detail ?? []).map((stat, i) => (
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    key={i} 
+                    key={stat.id}
                     className="p-5 rounded-2xl bg-surface-container-low/50 border border-outline-variant/10 shadow-sm flex flex-col justify-between hover:bg-surface-container-low transition-colors"
                   >
-                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-3">{stat.label}</p>
+                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-3">{stat.label[lang]}</p>
                     <div>
                       <p className="font-display text-2xl md:text-3xl text-primary mb-1">{stat.value}</p>
-                      <p className="text-xs text-secondary/80 italic">{stat.sub}</p>
+                      <p className="text-xs text-secondary/80 italic">{stat.sub[lang]}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                
-                {/* Person 1  */}
-                <motion.div 
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
-                  className="p-6 rounded-3xl bg-secondary-container/20 border border-secondary/20 relative overflow-hidden group hover:!border-secondary/40 transition-colors"
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                     <Heart className="w-24 h-24 text-secondary fill-current rotate-12" />
-                  </div>
-                  <div className="flex justify-between items-end mb-4 relative z-10">
-                    <div>
-                      <h3 className="font-display text-2xl text-secondary mb-1">Trường Anim</h3>
-                      <p className="text-sm text-secondary/70 font-semibold tracking-wider">52% {t.contrib}</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-secondary shadow-lg">
-                       <img src="https://love-note.earth.io.vn/images/672394217_946668514823940_3684029729342554678_n.jpg" alt="Truong" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full h-2 bg-secondary/20 rounded-full mb-6 overflow-hidden relative z-10">
-                    <motion.div initial={{ width: 0 }} whileInView={{ width: "52%" }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-secondary rounded-full" />
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2 text-center relative z-10">
-                    <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">3,307</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.msg}</p>
-                    </div>
-                    <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">1,204</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.given}</p>
-                    </div>
-                    <div className="bg-surface/60 rounded-xl p-3 border border-secondary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">288</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.got}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                {(config?.stats.contributions ?? []).map((c, i) => {
+                  const person = peopleById.get(c.personId);
+                  if (!person) return null;
+                  const style = ACCENT_STYLES[person.accent];
 
-                {/* Person 2  */}
-                <motion.div 
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.4 }}
-                  className="p-6 rounded-3xl bg-primary/5 border border-primary/20 relative overflow-hidden group hover:!border-primary/40 transition-colors"
-                >
-                  <div className="absolute top-0 right-0 p-4 opacity-10">
-                     <Heart className="w-24 h-24 text-primary fill-current -rotate-12" />
-                  </div>
-                  <div className="flex justify-between items-end mb-4 relative z-10">
-                    <div>
-                      <h3 className="font-display text-2xl text-primary mb-1">Bích Ngọc</h3>
-                      <p className="text-sm text-primary/70 font-semibold tracking-wider">48% {t.contrib}</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary shadow-lg">
-                       <img src="https://love-note.earth.io.vn/images/641226165_1911914302770064_335593052087986292_n.jpg" alt="Ngoc" className="w-full h-full object-cover" />
-                    </div>
-                  </div>
-                  
-                  <div className="w-full h-2 bg-primary/20 rounded-full mb-6 overflow-hidden relative z-10">
-                    <motion.div initial={{ width: 0 }} whileInView={{ width: "48%" }} viewport={{ once: true }} transition={{ duration: 1, delay: 0.5 }} className="h-full bg-primary rounded-full" />
-                  </div>
-                  
-                  <div className="grid grid-cols-3 gap-2 text-center relative z-10">
-                    <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">3,094</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.msg}</p>
-                    </div>
-                    <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">288</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.given}</p>
-                    </div>
-                    <div className="bg-surface/60 rounded-xl p-3 border border-primary/10">
-                      <p className="font-display text-xl text-on-surface mb-1">1,204</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{t.got}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                  return (
+                    <motion.div
+                      key={c.personId}
+                      initial={{ opacity: 0, x: i === 0 ? -20 : 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.4 }}
+                      className={`p-6 rounded-3xl border relative overflow-hidden group transition-colors ${style.card}`}
+                    >
+                      <div className="absolute top-0 right-0 p-4 opacity-10">
+                        <Heart className={`w-24 h-24 fill-current ${style.watermark}`} />
+                      </div>
+                      <div className="flex justify-between items-end mb-4 relative z-10">
+                        <div>
+                          <h3 className={`font-display text-2xl mb-1 ${style.name}`}>{person.name}</h3>
+                          <p className={`text-sm font-semibold tracking-wider ${style.percent}`}>{c.percent}% {t.contrib}</p>
+                        </div>
+                        <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shadow-lg ${style.avatarBorder}`}>
+                          <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
+                        </div>
+                      </div>
 
+                      <div className={`w-full h-2 rounded-full mb-6 overflow-hidden relative z-10 ${style.track}`}>
+                        <motion.div
+                          initial={{ width: 0 }}
+                          whileInView={{ width: `${c.percent}%` }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className={`h-full rounded-full ${style.bar}`}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 text-center relative z-10">
+                        {[
+                          { value: c.messages, label: t.msg },
+                          { value: c.given, label: t.given },
+                          { value: c.got, label: t.got }
+                        ].map((tile) => (
+                          <div key={tile.label} className={`bg-surface/60 rounded-xl p-3 border ${style.tile}`}>
+                            <p className="font-display text-xl text-on-surface mb-1">{tile.value}</p>
+                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{tile.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
               
             </div>
@@ -503,20 +493,16 @@ const MemoriesPopup = ({ isOpen, onClose, lang, entries, onNavigate }: { isOpen:
   );
 };
 
-const Navbar = ({ lang, setLang, navItems }: { lang: Lang, setLang: (l: Lang) => void, navItems: { label: string; id: string }[] }) => {
+const Navbar = ({ lang, setLang, navItems, brandName, people }: { lang: Lang, setLang: (l: Lang) => void, navItems: { label: string; id: string }[], brandName: string, people: PersonDoc[] }) => {
   const t = translations[lang];
   const [showLinks, setShowLinks] = useState<string | null>(null);
-
-  const socialLinks = {
-    truong: { name: 'Truong Anim', fb: 'https://facebook.com/truonganim', color: 'ring-blue-400' },
-    bich: { name: 'Bich Ngoc', fb: 'https://facebook.com/bichngoc', color: 'ring-pink-400' }
-  };
+  const selectedPerson = people.find((p) => p.id === showLinks);
 
   return (
     <header className="fixed top-0 w-full z-100 bg-surface/60 backdrop-blur-xl transition-all duration-300">
       <div className="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
         <div className="font-headline italic text-2xl text-primary tracking-tighter">
-          Love Note
+          {brandName}
         </div>
         <nav className="hidden md:flex gap-8">
           {navItems.map((item) => (
@@ -543,34 +529,29 @@ const Navbar = ({ lang, setLang, navItems }: { lang: Lang, setLang: (l: Lang) =>
             )}
           </button>
           <div className="flex -space-x-3 hover:space-x-1 transition-all duration-300">
-            {/* Truong Anim Avatar */}
-            <button 
-              onClick={() => setShowLinks(showLinks === 'truong' ? null : 'truong')}
-              className={`w-10 h-10 rounded-full border-2 border-white ring-2 ${socialLinks.truong.color} overflow-hidden cursor-pointer transition-transform hover:scale-110 active:scale-95`}
-            >
-              <img src="https://love-note.earth.io.vn/images/672394217_946668514823940_3684029729342554678_n.jpg" alt="Truong Anim" className="w-full h-full object-cover bg-blue-50" />
-            </button>
-            {/* Bich Ngoc Avatar */}
-            <button 
-              onClick={() => setShowLinks(showLinks === 'bich' ? null : 'bich')}
-              className={`w-10 h-10 rounded-full border-2 border-white ring-2 ${socialLinks.bich.color} overflow-hidden cursor-pointer transition-transform hover:scale-110 active:scale-95`}
-            >
-              <img src="https://love-note.earth.io.vn/images/641226165_1911914302770064_335593052087986292_n.jpg" alt="Bich Ngoc" className="w-full h-full object-cover bg-pink-50" />
-            </button>
+            {people.map((person) => (
+              <button
+                key={person.id}
+                onClick={() => setShowLinks(showLinks === person.id ? null : person.id)}
+                className={`w-10 h-10 rounded-full border-2 border-white ring-2 ${person.ringClass} overflow-hidden cursor-pointer transition-transform hover:scale-110 active:scale-95`}
+              >
+                <img src={person.avatar} alt={person.name} className={`w-full h-full object-cover ${person.avatarBgClass}`} />
+              </button>
+            ))}
           </div>
 
           <AnimatePresence>
-            {showLinks && (
-              <motion.div 
+            {selectedPerson && (
+              <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 className="absolute top-full right-0 mt-4 bg-white/80 backdrop-blur-xl border border-outline-variant/20 p-4 rounded-2xl ethereal-shadow min-w-[200px]"
               >
-                <p className="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">{t.socials.connectWith} {socialLinks[showLinks as keyof typeof socialLinks].name}</p>
-                <a 
-                  href={socialLinks[showLinks as keyof typeof socialLinks].fb} 
-                  target="_blank" 
+                <p className="text-xs font-label uppercase tracking-widest text-on-surface-variant mb-2">{t.socials.connectWith} {selectedPerson.name}</p>
+                <a
+                  href={selectedPerson.facebook}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 p-2 hover:bg-primary/5 rounded-xl transition-colors group"
                 >
@@ -724,8 +705,10 @@ export default function App() {
   const [isStatsPopupOpen, setIsStatsPopupOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [milestoneDocs, setMilestoneDocs] = useState<MilestoneDoc[]>([]);
+  const [config, setConfig] = useState<SiteConfigDoc | null>(null);
 
   const t = translations[lang];
+  const people = config?.people ?? [];
   const regulars = localizeMilestones(milestoneDocs, lang);
   const specials = localizeSpecials(milestoneDocs, lang);
   const memoryEntries = toMemoryEntries(milestoneDocs, lang);
@@ -740,6 +723,7 @@ export default function App() {
 
   useEffect(() => {
     fetchMilestones().then(setMilestoneDocs).catch(console.error);
+    fetchSiteConfig().then(setConfig).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -782,15 +766,19 @@ export default function App() {
 
   return (
     <div className="relative bg-surface text-on-surface font-body overflow-hidden">
-      <Navbar lang={lang} setLang={setLang} navItems={navItems} />
+      <Navbar lang={lang} setLang={setLang} navItems={navItems} brandName={config?.brand.name ?? ''} people={people} />
       <SideNav activeSection={activeSection} sections={sectionIds} />
       <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} entries={memoryEntries} onNavigate={handleNavigateToSection} />
       <StoryPopup story={activeStory} onClose={() => setActiveStory(null)} />
-      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} />
+      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} config={config} />
 
       <main ref={containerRef} className="snap-container">
         {/* SECTION 1: HERO */}
-        <section id="hero" className="snap-section bg-[url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center">
+        <section
+          id="hero"
+          className="snap-section bg-cover bg-center"
+          style={config?.hero.backgroundImage ? { backgroundImage: `url('${config.hero.backgroundImage}')` } : undefined}
+        >
           <div className="absolute inset-0 bg-surface/85 z-0" />
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -800,15 +788,15 @@ export default function App() {
           >
             <span className="font-label text-sm uppercase tracking-[0.2em] text-on-surface-variant mb-2 block">{t.hero.beginning}</span>
             <h1 className="font-headline text-6xl md:text-8xl text-primary tracking-tight leading-tight">
-              {t.hero.titleP1} <br/><span className="italic font-light text-on-surface">{t.hero.titleP2}</span>
+              {config?.hero.title[lang]} <br/><span className="italic font-light text-on-surface">{config?.hero.titleAccent[lang]}</span>
             </h1>
             <p className="font-body text-xl md:text-2xl text-on-surface-variant max-w-2xl mt-4 leading-relaxed">
-              {t.hero.subtitle}
+              {config?.hero.subtitle}
             </p>
             <div className="mt-12 glass-panel p-8 rounded-xl ethereal-shadow max-w-lg relative overflow-hidden backdrop-blur-2xl">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container/20 rounded-full blur-3xl shadow-none" />
               <p className="italic font-headline text-on-surface leading-loose text-center opacity-90 relative z-10">
-                {t.hero.quote}
+                {config?.hero.quote[lang]}
               </p>
             </div>
             
@@ -911,7 +899,7 @@ export default function App() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-              {getStats(lang).map((stat, idx) => (
+              {getStats(config, lang).map((stat, idx) => (
                 <motion.div 
                   key={stat.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -966,27 +954,19 @@ export default function App() {
           <div className="max-w-4xl w-full z-10 flex flex-col items-center text-center gap-12">
             <div className="relative h-64 md:h-80 w-full flex items-center justify-center">
               {/* Floating Avatars */}
-              <motion.div 
-                animate={{ 
-                  y: [0, -20, 0],
-                  rotate: [0, 5, -5, 0]
-                }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute left-[20%] md:left-[30%] w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-white ethereal-shadow ring-4 ring-blue-400/30 overflow-hidden z-20"
-              >
-                <img src="https://love-note.earth.io.vn/images/672394217_946668514823940_3684029729342554678_n.jpg" className="w-full h-full object-cover bg-blue-50" alt="Truong Anim" />
-              </motion.div>
-
-              <motion.div 
-                animate={{ 
-                  y: [0, 20, 0],
-                  rotate: [0, -5, 5, 0]
-                }}
-                transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute right-[20%] md:right-[30%] w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-white ethereal-shadow ring-4 ring-pink-400/30 overflow-hidden z-20"
-              >
-                <img src="https://love-note.earth.io.vn/images/641226165_1911914302770064_335593052087986292_n.jpg" className="w-full h-full object-cover bg-pink-50" alt="Bich Ngoc" />
-              </motion.div>
+              {people.map((person, i) => (
+                <motion.div
+                  key={person.id}
+                  animate={{
+                    y: i === 0 ? [0, -20, 0] : [0, 20, 0],
+                    rotate: i === 0 ? [0, 5, -5, 0] : [0, -5, 5, 0]
+                  }}
+                  transition={{ duration: i === 0 ? 6 : 7, repeat: Infinity, ease: "easeInOut" }}
+                  className={`absolute ${i === 0 ? 'left-[20%] md:left-[30%]' : 'right-[20%] md:right-[30%]'} w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-white ethereal-shadow ring-4 ${person.ringSoftClass} overflow-hidden z-20`}
+                >
+                  <img src={person.avatar} className={`w-full h-full object-cover ${person.avatarBgClass}`} alt={person.name} />
+                </motion.div>
+              ))}
 
               <motion.div 
                 initial={{ scale: 0 }}
@@ -1019,7 +999,7 @@ export default function App() {
               ))}
             </div>
             <div className="font-label text-[10px] tracking-[0.1em] uppercase text-on-surface-variant/30 text-center">
-              {t.continuation.footer}
+              {config?.footer.copyright[lang]}
             </div>
           </footer>
         </section>

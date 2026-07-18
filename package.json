@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "sync:milestones": "tsx scripts/sync-milestones.ts"
+    "sync": "npm run sync:milestones && npm run sync:config",
+    "sync:milestones": "tsx scripts/sync-milestones.ts",
+    "sync:config": "tsx scripts/sync-config.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
