@@ -1,0 +1,117 @@
+{
+  "brand": {
+    "name": "Love Note"
+  },
+  "hero": {
+    "backgroundImage": "https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=2000&auto=format&fit=crop",
+    "title": { "en": "A Journey ", "zh": "我们的" },
+    "titleAccent": { "en": "of Us", "zh": "旅程" },
+    "subtitle": "Truong Anim & Bich Ngoc",
+    "quote": {
+      "en": "\"In the vastness of time and space, finding you was the serendipity that gave my universe color.\"",
+      "zh": "\"在浩瀚的时空中，遇见你是让我的宇宙拥有色彩的缘分。\""
+    }
+  },
+  "people": [
+    {
+      "id": "truong",
+      "name": "Trường Anim",
+      "avatar": "https://love-note.earth.io.vn/images/672394217_946668514823940_3684029729342554678_n.jpg",
+      "facebook": "https://facebook.com/truonganim",
+      "accent": "secondary",
+      "ringClass": "ring-blue-400",
+      "ringSoftClass": "ring-blue-400/30",
+      "avatarBgClass": "bg-blue-50"
+    },
+    {
+      "id": "bich",
+      "name": "Bích Ngọc",
+      "avatar": "https://love-note.earth.io.vn/images/641226165_1911914302770064_335593052087986292_n.jpg",
+      "facebook": "https://facebook.com/bichngoc",
+      "accent": "primary",
+      "ringClass": "ring-pink-400",
+      "ringSoftClass": "ring-pink-400/30",
+      "avatarBgClass": "bg-pink-50"
+    }
+  ],
+  "stats": {
+    "period": { "en": "Jan 25, 2026 – Apr 26, 2026 ", "zh": "2026年1月25日 – 2026年4月26日 " },
+    "periodDays": { "en": "(92 days)", "zh": "(92 天)" },
+    "summary": [
+      {
+        "id": "days",
+        "icon": "calendar",
+        "value": "92",
+        "label": { "en": "Days Together", "zh": "在一起的天数" },
+        "bgClass": "bg-secondary-container/20"
+      },
+      {
+        "id": "messages",
+        "icon": "message",
+        "value": "6,401",
+        "label": { "en": "Messages Exchanged", "zh": "交换的信息" }
+      },
+      {
+        "id": "reactions",
+        "icon": "heart",
+        "value": "1,492",
+        "label": { "en": "Reactions", "zh": "收到的互动" }
+      },
+      {
+        "id": "media",
+        "icon": "image",
+        "value": "639",
+        "label": { "en": "Media Shared", "zh": "分享的媒体" },
+        "bgClass": "bg-primary-fixed/30"
+      }
+    ],
+    "detail": [
+      {
+        "id": "activeDays",
+        "value": "89",
+        "label": { "en": "Active Days", "zh": "活跃天数" },
+        "sub": { "en": "~71.9/day", "zh": "约 71.9/天" }
+      },
+      {
+        "id": "textMessages",
+        "value": "5,568",
+        "label": { "en": "Text Messages", "zh": "文字信息" },
+        "sub": { "en": "Words of love", "zh": "情话" }
+      },
+      {
+        "id": "links",
+        "value": "162",
+        "label": { "en": "Links Shared", "zh": "分享链接" },
+        "sub": { "en": "Memes & songs", "zh": "梗图 & 歌曲" }
+      },
+      {
+        "id": "deleted",
+        "value": "32",
+        "label": { "en": "Deleted", "zh": "撤回" },
+        "sub": { "en": "Oops moments", "zh": "Oops 小意外" }
+      }
+    ],
+    "contributions": [
+      {
+        "personId": "truong",
+        "percent": 52,
+        "messages": "3,307",
+        "given": "1,204",
+        "got": "288"
+      },
+      {
+        "personId": "bich",
+        "percent": 48,
+        "messages": "3,094",
+        "given": "288",
+        "got": "1,204"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": {
+      "en": "A Digital Sanctuary for Our Love © 2026",
+      "zh": "我们感情的数字庇护所 © 2026"
+    }
+  }
+}
