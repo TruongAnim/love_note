@@ -20,7 +20,7 @@ import { Heart,
   Image as ImageIcon
 } from 'lucide-react';
 import { translations, Lang } from './translations';
-import { fetchMilestones, MilestoneDoc, MilestoneIcon } from './services/milestones';
+import { fetchMilestones, MilestoneDoc, MilestoneIcon, SpecialLayout } from './services/milestones';
 
 // --- Types ---
 interface Stat {
@@ -41,22 +41,88 @@ interface LocalizedMilestone {
   isHighlight?: boolean;
 }
 
+interface StoryView {
+  title: string;
+  date: string;
+  paragraphs: string[];
+}
+
+interface LocalizedSpecial {
+  id: string;
+  order: number;
+  date: string;
+  layout: SpecialLayout;
+  navLabel?: string;
+  chapter: string;
+  title: string;
+  titleAccent?: string;
+  description: string;
+  video?: string;
+  image?: string;
+  videoTag?: string;
+  videoDate?: string;
+  commentLink?: string;
+  ctaLabel?: string;
+  story?: StoryView;
+}
+
+type MemoryEntry =
+  | { kind: 'regular'; data: LocalizedMilestone }
+  | { kind: 'special'; data: LocalizedSpecial };
+
 const MILESTONE_ICONS: Record<MilestoneIcon, React.ReactNode> = {
   heart: <Heart className="w-5 h-5" />,
   message: <MessageCircle className="w-5 h-5" />,
   sparkles: <Sparkles className="w-5 h-5" />
 };
 
+const localizeMilestone = (m: MilestoneDoc, lang: Lang): LocalizedMilestone => ({
+  id: m.id,
+  date: m.date,
+  title: m.title[lang],
+  description: m.description[lang],
+  image: m.image,
+  icon: MILESTONE_ICONS[m.icon],
+  isHighlight: m.isHighlight
+});
+
+const localizeSpecial = (m: MilestoneDoc, lang: Lang): LocalizedSpecial => ({
+  id: m.id,
+  order: m.order,
+  date: m.date,
+  layout: m.layout ?? 'media-left',
+  navLabel: m.navLabel?.[lang],
+  chapter: m.chapter?.[lang] ?? '',
+  title: m.title[lang],
+  titleAccent: m.titleAccent?.[lang],
+  description: m.description[lang],
+  video: m.video,
+  image: m.image,
+  videoTag: m.videoTag?.[lang],
+  videoDate: m.videoDate?.[lang],
+  commentLink: m.commentLink,
+  ctaLabel: m.ctaLabel?.[lang],
+  story: m.story
+    ? {
+        title: m.story.title[lang],
+        date: m.story.date[lang],
+        paragraphs: m.story.paragraphs.map((p) => p[lang])
+      }
+    : undefined
+});
+
 const localizeMilestones = (docs: MilestoneDoc[], lang: Lang): LocalizedMilestone[] =>
-  docs.map((m) => ({
-    id: m.id,
-    date: m.date,
-    title: m.title[lang],
-    description: m.description[lang],
-    image: m.image,
-    icon: MILESTONE_ICONS[m.icon],
-    isHighlight: m.isHighlight
-  }));
+  docs.filter((d) => !d.isSpecial).map((d) => localizeMilestone(d, lang));
+
+const localizeSpecials = (docs: MilestoneDoc[], lang: Lang): LocalizedSpecial[] =>
+  docs.filter((d) => d.isSpecial).map((d) => localizeSpecial(d, lang));
+
+const toMemoryEntries = (docs: MilestoneDoc[], lang: Lang): MemoryEntry[] =>
+  docs.map((d) =>
+    d.isSpecial
+      ? { kind: 'special' as const, data: localizeSpecial(d, lang) }
+      : { kind: 'regular' as const, data: localizeMilestone(d, lang) }
+  );
 
 // --- Data ---
 const STATS: Stat[] = [
@@ -76,19 +142,18 @@ const getStats = (lang: Lang): Stat[] => {
 
 // --- Components ---
 
-const ChapterOnePopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
-  const t = translations[lang].popups.ch1;
+const StoryPopup = ({ story, onClose }: { story: StoryView | null, onClose: () => void }) => {
   return (
     <AnimatePresence>
-      {isOpen && (
-        <motion.div 
+      {story && (
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[200] flex items-center justify-center p-4 xl:p-8"
         >
           <div className="absolute inset-0 bg-surface/80 backdrop-blur-md" onClick={onClose} />
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -96,10 +161,10 @@ const ChapterOnePopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: 
           >
             <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl">
               <div>
-                <h2 className="font-headline text-3xl text-primary">{t.title}</h2>
-                <p className="text-on-surface-variant font-body mt-1">{t.date}</p>
+                <h2 className="font-headline text-3xl text-primary">{story.title}</h2>
+                <p className="text-on-surface-variant font-body mt-1">{story.date}</p>
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="w-12 h-12 rounded-full hover:bg-primary/5 flex items-center justify-center transition-all group shrink-0 ml-4"
               >
@@ -109,61 +174,10 @@ const ChapterOnePopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: 
                 </div>
               </button>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-               <div className="prose prose-lg prose-p:text-on-surface-variant prose-p:leading-relaxed max-w-none space-y-6">
-                  <p>{t.p1}</p>
-                  <p>{t.p2}</p>
-                  <p>{t.p3}</p>
-               </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
 
-const ChapterTwoPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () => void, lang: Lang }) => {
-  const t = translations[lang].popups.ch2;
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 xl:p-8"
-        >
-          <div className="absolute inset-0 bg-surface/80 backdrop-blur-md" onClick={onClose} />
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="w-full max-w-3xl h-auto max-h-[85vh] bg-surface-container-lowest glass-panel ethereal-shadow rounded-3xl overflow-hidden flex flex-col z-10"
-          >
-            <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl">
-              <div>
-                <h2 className="font-headline text-3xl text-primary">{t.title}</h2>
-                <p className="text-on-surface-variant font-body mt-1">{t.date}</p>
-              </div>
-              <button 
-                onClick={onClose}
-                className="w-12 h-12 rounded-full hover:bg-primary/5 flex items-center justify-center transition-all group shrink-0 ml-4"
-              >
-                <div className="relative w-6 h-6">
-                  <div className="absolute top-1/2 left-0 w-full h-0.5 bg-on-surface-variant -rotate-45 group-hover:bg-primary transition-all" />
-                  <div className="absolute top-1/2 left-0 w-full h-0.5 bg-on-surface-variant rotate-45 group-hover:bg-primary transition-all" />
-                </div>
-              </button>
-            </div>
-            
             <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                <div className="prose prose-lg prose-p:text-on-surface-variant prose-p:leading-relaxed max-w-none space-y-6">
-                  <p>{t.p1}</p>
-                  <p>{t.p2}</p>
-                  <p>{t.p3}</p>
-                  <p>{t.p4}</p>
+                  {story.paragraphs.map((p, i) => <p key={i}>{p}</p>)}
                </div>
             </div>
           </motion.div>
@@ -353,7 +367,7 @@ const StatsPopup = ({ isOpen, onClose, lang }: { isOpen: boolean, onClose: () =>
   );
 };
 
-const MemoriesPopup = ({ isOpen, onClose, lang, milestones }: { isOpen: boolean, onClose: () => void, lang: Lang, milestones: LocalizedMilestone[] }) => {
+const MemoriesPopup = ({ isOpen, onClose, lang, entries, onNavigate }: { isOpen: boolean, onClose: () => void, lang: Lang, entries: MemoryEntry[], onNavigate: (id: string) => void }) => {
   const t = translations[lang];
   return (
     <AnimatePresence>
@@ -392,44 +406,94 @@ const MemoriesPopup = ({ isOpen, onClose, lang, milestones }: { isOpen: boolean,
                 {/* Central Timeline Line */}
                 <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/20 hidden md:block" />
 
-                {milestones.map((m, idx) => (
-                  <motion.div 
-                    key={m.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{ duration: 0.5 }}
-                    className={`relative flex flex-col md:flex-row items-center w-full z-10 ${
-                      idx % 2 === 0 ? 'md:flex-row-reverse text-right' : 'text-left'
-                    }`}
-                  >
-                    {/* Card Content */}
-                    <div className="w-full md:w-[46%] pb-8 md:pb-0">
-                      <div className="bg-surface-container-low/90 backdrop-blur-sm rounded-2xl p-6 ethereal-shadow border border-outline-variant/10 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 group relative overflow-hidden">
-                        <span className="font-label text-[10px] text-primary font-bold tracking-[0.2em] uppercase mb-2 block">{m.date}</span>
-                        <h4 className="font-headline text-lg text-on-surface mb-3">{m.title}</h4>
-                        {m.image && (
-                          <div className="overflow-hidden rounded-lg aspect-video mb-4">
-                            <img src={m.image} alt={m.title} className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
-                          </div>
-                        )}
-                        {m.description && (
-                          <p className={`font-body text-xs text-on-surface-variant leading-relaxed opacity-80 ${idx % 2 === 0 ? 'ml-auto' : ''}`}>
-                            {m.description}
-                          </p>
-                        )}
+                {entries.map((entry, idx) => {
+                  if (entry.kind === 'special') {
+                    const s = entry.data;
+                    return (
+                      <motion.div
+                        key={s.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-50px" }}
+                        transition={{ duration: 0.5 }}
+                        className={`relative flex flex-col md:flex-row items-center w-full z-10 ${
+                          idx % 2 === 0 ? 'md:flex-row-reverse text-right' : 'text-left'
+                        }`}
+                      >
+                        {/* Card Content */}
+                        <div className="w-full md:w-[46%] pb-8 md:pb-0">
+                          <button
+                            type="button"
+                            onClick={() => onNavigate(s.id)}
+                            className="w-full text-inherit rounded-2xl p-[1.5px] bg-gradient-to-r from-primary/70 via-secondary/60 to-primary/70 ethereal-shadow transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10 group block cursor-pointer"
+                          >
+                            <div className="rounded-[15px] bg-surface-container-lowest px-6 py-5 relative overflow-hidden">
+                              <div className="absolute -right-3 -top-3 opacity-[0.07] pointer-events-none">
+                                <Heart className="w-20 h-20 text-primary fill-current" />
+                              </div>
+                              <span className="font-label text-[10px] text-secondary font-bold tracking-[0.2em] uppercase mb-2 block relative z-10">{s.chapter}</span>
+                              <h4 className="font-headline text-xl text-on-surface mb-3 relative z-10 leading-tight">
+                                {s.title} {s.titleAccent && <span className="italic text-primary">{s.titleAccent}</span>}
+                              </h4>
+                              <span className="inline-flex items-center gap-2 text-primary font-bold text-sm relative z-10">
+                                <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-0.5 tracking-tight">{t.special.viewChapter}</span>
+                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+
+                        {/* Centered Book Icon (special node) */}
+                        <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-9 h-9 rounded-full primary-gradient-glow ring-4 ring-primary-fixed/30 items-center justify-center z-20 shadow-md">
+                          <BookOpen className="w-4 h-4 text-white" />
+                        </div>
+
+                        {/* Spacer for symmetry */}
+                        <div className="hidden md:block md:w-[46%]" />
+                      </motion.div>
+                    );
+                  }
+
+                  const m = entry.data;
+                  return (
+                    <motion.div
+                      key={m.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      transition={{ duration: 0.5 }}
+                      className={`relative flex flex-col md:flex-row items-center w-full z-10 ${
+                        idx % 2 === 0 ? 'md:flex-row-reverse text-right' : 'text-left'
+                      }`}
+                    >
+                      {/* Card Content */}
+                      <div className="w-full md:w-[46%] pb-8 md:pb-0">
+                        <div className="bg-surface-container-low/90 backdrop-blur-sm rounded-2xl p-6 ethereal-shadow border border-outline-variant/10 transition-all duration-500 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 group relative overflow-hidden">
+                          <span className="font-label text-[10px] text-primary font-bold tracking-[0.2em] uppercase mb-2 block">{m.date}</span>
+                          <h4 className="font-headline text-lg text-on-surface mb-3">{m.title}</h4>
+                          {m.image && (
+                            <div className="overflow-hidden rounded-lg aspect-video mb-4">
+                              <img src={m.image} alt={m.title} className="w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+                            </div>
+                          )}
+                          {m.description && (
+                            <p className={`font-body text-xs text-on-surface-variant leading-relaxed opacity-80 ${idx % 2 === 0 ? 'ml-auto' : ''}`}>
+                              {m.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Centered Heart Icon */}
-                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-surface-container-lowest rounded-full ring-4 ring-primary-fixed/30 border border-primary/20 items-center justify-center z-20 shadow-sm">
-                      <Heart className="w-3 h-3 text-primary fill-current" />
-                    </div>
+                      {/* Centered Heart Icon */}
+                      <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 w-8 h-8 bg-surface-container-lowest rounded-full ring-4 ring-primary-fixed/30 border border-primary/20 items-center justify-center z-20 shadow-sm">
+                        <Heart className="w-3 h-3 text-primary fill-current" />
+                      </div>
 
-                    {/* Spacer for symmetry */}
-                    <div className="hidden md:block md:w-[46%]" />
-                  </motion.div>
-                ))}
+                      {/* Spacer for symmetry */}
+                      <div className="hidden md:block md:w-[46%]" />
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </motion.div>
@@ -439,7 +503,7 @@ const MemoriesPopup = ({ isOpen, onClose, lang, milestones }: { isOpen: boolean,
   );
 };
 
-const Navbar = ({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) => {
+const Navbar = ({ lang, setLang, navItems }: { lang: Lang, setLang: (l: Lang) => void, navItems: { label: string; id: string }[] }) => {
   const t = translations[lang];
   const [showLinks, setShowLinks] = useState<string | null>(null);
 
@@ -455,13 +519,7 @@ const Navbar = ({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) =
           Love Note
         </div>
         <nav className="hidden md:flex gap-8">
-          {[
-            { label: t.nav.home, id: 'hero' }, 
-            { label: t.nav.memories, id: 'milestones' }, 
-            { label: t.nav.confessions, id: 'confessions' }, 
-            { label: t.nav.cinema, id: 'cinema' }, 
-            { label: t.nav.journey, id: 'stats' }
-          ].map((item) => (
+          {navItems.map((item) => (
             <a 
               key={item.id}
               href={`#${item.id}`} 
@@ -530,8 +588,7 @@ const Navbar = ({ lang, setLang }: { lang: Lang, setLang: (l: Lang) => void }) =
   );
 };
 
-const SideNav = ({ activeSection }: { activeSection: string }) => {
-  const sections = ['hero', 'milestones', 'confessions', 'cinema', 'stats', 'continuation'];
+const SideNav = ({ activeSection, sections }: { activeSection: string, sections: string[] }) => {
   return (
     <nav className="fixed right-8 top-1/2 -translate-y-1/2 flex flex-col gap-6 items-center z-50">
       {sections.map((section) => (
@@ -550,20 +607,136 @@ const SideNav = ({ activeSection }: { activeSection: string }) => {
   );
 };
 
+const SpecialSection = ({ special, isActive, bgClass, commentLabel, onOpenStory }: {
+  special: LocalizedSpecial;
+  isActive: boolean;
+  bgClass: string;
+  commentLabel: string;
+  onOpenStory: (story: StoryView) => void;
+}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaLeft = special.layout === 'media-left';
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isActive) v.play().catch(() => {});
+    else v.pause();
+  }, [isActive]);
+
+  const media = (
+    <div className={`lg:col-span-5 flex justify-center ${mediaLeft ? 'lg:justify-start' : 'lg:justify-end order-1 lg:order-2'}`}>
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        whileInView={{ scale: 1, opacity: 1 }}
+        className="relative w-full max-w-[260px] md:max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden ethereal-shadow group bg-black"
+      >
+        {special.video ? (
+          <video ref={videoRef} loop muted playsInline className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+            <source src={special.video} type="video/mp4" />
+          </video>
+        ) : special.image ? (
+          <img src={special.image} alt={special.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-60" />
+        {(special.videoTag || special.videoDate) && (
+          <motion.div
+            initial={{ y: 0 }}
+            animate={{ y: [-5, 5, -5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-8 left-8 right-8 z-20"
+          >
+            <div className={`bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 ${mediaLeft ? '' : 'flex justify-end'}`}>
+              <div className={`flex items-center gap-4 ${mediaLeft ? '' : 'flex-row-reverse text-right'}`}>
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-10 h-10 rounded-full primary-gradient-glow flex items-center justify-center shrink-0"
+                >
+                  <Heart className="text-white w-5 h-5 fill-current" />
+                </motion.div>
+                <div>
+                  {special.videoTag && <p className="text-white text-sm font-medium">{special.videoTag}</p>}
+                  {special.videoDate && <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">{special.videoDate}</p>}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+    </div>
+  );
+
+  const content = (
+    <motion.div
+      initial={{ opacity: 0, x: mediaLeft ? 20 : -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      className={`lg:col-span-7 space-y-8 ${mediaLeft ? '' : 'order-2 lg:order-1'}`}
+    >
+      <div>
+        <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">{special.chapter}</span>
+        <h2 className="font-headline text-5xl md:text-7xl text-on-surface leading-[1.1] mb-6">
+          {special.title}<br/>
+          {special.titleAccent && <span className="italic text-primary">{special.titleAccent}</span>}
+        </h2>
+      </div>
+      <p className="font-body text-lg md:text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-xl">
+        {special.description}
+      </p>
+      <div className="flex flex-wrap gap-8 items-center pt-4">
+        {special.commentLink && (
+          <a
+            href={special.commentLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="primary-gradient-glow text-white px-10 py-4 rounded-full font-semibold hover:shadow-[0_0_30px_rgba(188,0,79,0.3)] transition-all inline-block"
+          >
+            {commentLabel}
+          </a>
+        )}
+        {special.story && (
+          <button
+            onClick={() => onOpenStory(special.story!)}
+            className="flex items-center gap-3 text-primary font-bold group cursor-pointer"
+          >
+            <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{special.ctaLabel}</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </button>
+        )}
+      </div>
+    </motion.div>
+  );
+
+  return (
+    <section id={special.id} className={`snap-section px-6 md:px-12 lg:px-24 flex items-center justify-center ${bgClass}`}>
+      <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
+        {mediaLeft ? <>{media}{content}</> : <>{content}{media}</>}
+      </div>
+    </section>
+  );
+};
+
 export default function App() {
   const [lang, setLang] = useState<Lang>('en');
   const [activeSection, setActiveSection] = useState('hero');
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [isChapterOnePopupOpen, setIsChapterOnePopupOpen] = useState(false);
-  const [isChapterTwoPopupOpen, setIsChapterTwoPopupOpen] = useState(false);
+  const [activeStory, setActiveStory] = useState<StoryView | null>(null);
   const [isStatsPopupOpen, setIsStatsPopupOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const video1Ref = useRef<HTMLVideoElement>(null);
-  const video2Ref = useRef<HTMLVideoElement>(null);
   const [milestoneDocs, setMilestoneDocs] = useState<MilestoneDoc[]>([]);
 
   const t = translations[lang];
-  const milestones = localizeMilestones(milestoneDocs, lang);
+  const regulars = localizeMilestones(milestoneDocs, lang);
+  const specials = localizeSpecials(milestoneDocs, lang);
+  const memoryEntries = toMemoryEntries(milestoneDocs, lang);
+
+  const sectionIds = ['hero', 'milestones', ...specials.map((s) => s.id), 'stats', 'continuation'];
+  const navItems = [
+    { label: t.nav.home, id: 'hero' },
+    { label: t.nav.memories, id: 'milestones' },
+    ...specials.filter((s) => s.navLabel).map((s) => ({ label: s.navLabel!, id: s.id })),
+    { label: t.nav.journey, id: 'stats' }
+  ];
 
   useEffect(() => {
     fetchMilestones().then(setMilestoneDocs).catch(console.error);
@@ -571,8 +744,8 @@ export default function App() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['hero', 'milestones', 'confessions', 'cinema', 'stats', 'continuation'];
-      
+      const sections = ['hero', 'milestones', ...milestoneDocs.filter((d) => d.isSpecial).map((d) => d.id), 'stats', 'continuation'];
+
       if (window.innerWidth >= 768) {
         const scrollPos = containerRef.current?.scrollTop || 0;
         const height = window.innerHeight;
@@ -598,29 +771,21 @@ export default function App() {
     const container = containerRef.current;
     container?.addEventListener('scroll', handleScroll);
     return () => container?.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [milestoneDocs]);
 
-  useEffect(() => {
-    if (activeSection === 'confessions') {
-      video1Ref.current?.play().catch(console.error);
-    } else {
-      video1Ref.current?.pause();
-    }
-
-    if (activeSection === 'cinema') {
-      video2Ref.current?.play().catch(console.error);
-    } else {
-      video2Ref.current?.pause();
-    }
-  }, [activeSection]);
+  const handleNavigateToSection = (id: string) => {
+    setIsPopupOpen(false);
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 80);
+  };
 
   return (
     <div className="relative bg-surface text-on-surface font-body overflow-hidden">
-      <Navbar lang={lang} setLang={setLang} />
-      <SideNav activeSection={activeSection} />
-      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} milestones={milestones} />
-      <ChapterOnePopup isOpen={isChapterOnePopupOpen} onClose={() => setIsChapterOnePopupOpen(false)} lang={lang} />
-      <ChapterTwoPopup isOpen={isChapterTwoPopupOpen} onClose={() => setIsChapterTwoPopupOpen(false)} lang={lang} />
+      <Navbar lang={lang} setLang={setLang} navItems={navItems} />
+      <SideNav activeSection={activeSection} sections={sectionIds} />
+      <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} entries={memoryEntries} onNavigate={handleNavigateToSection} />
+      <StoryPopup story={activeStory} onClose={() => setActiveStory(null)} />
       <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} />
 
       <main ref={containerRef} className="snap-container">
@@ -674,7 +839,7 @@ export default function App() {
               {/* Central Timeline Line */}
               <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary-fixed/30 hidden md:block" />
               
-              {milestones.filter((m) => m.isHighlight).map((m, idx) => (
+              {regulars.filter((m) => m.isHighlight).map((m, idx) => (
                 <motion.div 
                   key={m.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -710,164 +875,17 @@ export default function App() {
           </div>
         </section>
 
-        {/* SECTION 3: CONFESSIONS */}
-        <section id="confessions" className="snap-section px-6 md:px-12 lg:px-24">
-          <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-            <div className="lg:col-span-5 flex justify-center lg:justify-start">
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                className="relative w-full max-w-[260px] md:max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden ethereal-shadow group"
-              >
-                <video 
-                  ref={video1Ref}
-                  loop 
-                  playsInline 
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 grayscale-[10%]"
-                >
-                  <source src="https://love-note.earth.io.vn/videos/di_choi.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-60" />
-                <motion.div 
-                  initial={{ y: 0 }}
-                  animate={{ y: [-5, 5, -5] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute bottom-8 left-8 right-8 z-20"
-                >
-                  <div className="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
-                    <div className="flex items-center gap-4">
-                      <motion.div 
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-10 h-10 rounded-full primary-gradient-glow flex items-center justify-center"
-                      >
-                        <Heart className="text-white w-5 h-5 fill-current" />
-                      </motion.div>
-                      <div>
-                        <p className="text-white text-sm font-medium">{t.confessions.vidTag}</p>
-                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">{t.confessions.vidDate}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            </div>
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="lg:col-span-7 space-y-8"
-            >
-              <div>
-                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">{t.confessions.tag}</span>
-                <h1 className="font-display text-5xl md:text-7xl text-on-surface leading-[1.1] mb-6">
-                  {t.confessions.titleP1}<br/>
-                  <span className="italic text-primary">{t.confessions.titleP2}</span>
-                </h1>
-              </div>
-              <p className="font-body text-lg md:text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-xl">
-                {t.confessions.desc}
-              </p>
-              <div className="flex flex-wrap gap-8 items-center pt-4">
-                <a 
-                  href="https://www.facebook.com/share/r/18dp6zyt4n/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="primary-gradient-glow text-white px-10 py-4 rounded-full font-semibold hover:shadow-[0_0_30px_rgba(188,0,79,0.3)] transition-all inline-block"
-                >
-                  {t.confessions.comment}
-                </a>
-                <button 
-                  onClick={() => setIsChapterOnePopupOpen(true)}
-                  className="flex items-center gap-3 text-primary font-bold group cursor-pointer"
-                >
-                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{t.confessions.seeAll}</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* SECTION 4: CHAPTER 2 */}
-        <section id="cinema" className="snap-section bg-surface-container-low px-6 md:px-12 lg:px-24 flex items-center justify-center">
-          <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-center">
-            
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              className="lg:col-span-7 space-y-8 order-2 lg:order-1"
-            >
-              <div>
-                <span className="font-label text-secondary uppercase tracking-[0.2em] mb-4 block text-xs font-semibold">{t.cinema.tag}</span>
-                <h2 className="font-headline text-5xl md:text-7xl text-on-surface leading-[1.1] mb-6">
-                  {t.cinema.titleP1}<br/>
-                  <span className="italic text-primary">{t.cinema.titleP2}</span>
-                </h2>
-              </div>
-              <p className="font-body text-lg md:text-xl text-on-surface-variant leading-relaxed opacity-90 max-w-xl">
-                {t.cinema.desc}
-              </p>
-              <div className="flex flex-wrap gap-8 items-center pt-4">
-                <a 
-                  href="https://www.facebook.com/share/r/1bNv5pq4wT/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="primary-gradient-glow text-white px-10 py-4 rounded-full font-semibold hover:shadow-[0_0_30px_rgba(188,0,79,0.3)] transition-all inline-block"
-                >
-                  {t.confessions.comment}
-                </a>
-                <button 
-                  onClick={() => setIsChapterTwoPopupOpen(true)}
-                  className="flex items-center gap-3 text-primary font-bold group cursor-pointer"
-                >
-                  <span className="border-b-2 border-primary/20 group-hover:border-primary transition-all pb-1 tracking-tight">{t.cinema.readMore}</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
-              </div>
-            </motion.div>
-
-            <div className="lg:col-span-5 flex justify-center lg:justify-end order-1 lg:order-2">
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                className="relative w-full max-w-[260px] md:max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden ethereal-shadow group bg-black"
-              >
-                <video 
-                  ref={video2Ref}
-                  loop 
-                  playsInline 
-                  className="w-full h-full object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105"
-                >
-                  <source src="https://love-note.earth.io.vn/videos/di_choi_2.mp4" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-60" />
-                <motion.div 
-                  initial={{ y: 0 }}
-                  animate={{ y: [-5, 5, -5] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute bottom-8 left-8 right-8 z-20"
-                >
-                  <div className="bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20 flex justify-end">
-                    <div className="flex flex-row-reverse items-center gap-4 text-right">
-                      <motion.div 
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                        className="w-10 h-10 rounded-full primary-gradient-glow flex items-center justify-center shrink-0"
-                      >
-                        <Heart className="text-white w-5 h-5 fill-current" />
-                      </motion.div>
-                      <div>
-                        <p className="text-white text-sm font-medium">{t.cinema.vidTag}</p>
-                        <p className="text-white/60 text-[10px] uppercase tracking-[0.2em] font-label">{t.cinema.vidDate}</p>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            </div>
-            
-          </div>
-        </section>
+        {/* SPECIAL MILESTONE SECTIONS (data-driven) */}
+        {specials.map((s, i) => (
+          <SpecialSection
+            key={s.id}
+            special={s}
+            isActive={activeSection === s.id}
+            bgClass={i % 2 === 0 ? '' : 'bg-surface-container-low'}
+            commentLabel={t.special.comment}
+            onOpenStory={(story) => setActiveStory(story)}
+          />
+        ))}
 
         {/* SECTION 5: STATS */}
         <section id="stats" className="snap-section bg-surface px-6 md:px-12 py-24 overflow-hidden relative">

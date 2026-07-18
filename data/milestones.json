@@ -1,6 +1,6 @@
 [
   {
-    "id": "m1",
+    "id": "2025-11-25-admiration-from-afar",
     "order": 1,
     "date": "November 25, 2025",
     "icon": "heart",
@@ -12,7 +12,7 @@
     }
   },
   {
-    "id": "m2",
+    "id": "2026-01-25-first-message",
     "order": 2,
     "date": "January 25, 2026",
     "icon": "message",
@@ -24,7 +24,7 @@
     }
   },
   {
-    "id": "m3",
+    "id": "2026-02-01-first-encounter",
     "order": 3,
     "date": "February 1, 2026",
     "icon": "heart",
@@ -37,7 +37,7 @@
     }
   },
   {
-    "id": "m4",
+    "id": "2026-02-14-first-flowers",
     "order": 4,
     "date": "February 14, 2026",
     "icon": "sparkles",
@@ -49,7 +49,7 @@
     }
   },
   {
-    "id": "m5",
+    "id": "2026-02-16-new-years-eve",
     "order": 5,
     "date": "February 16, 2026",
     "icon": "sparkles",
@@ -62,7 +62,7 @@
     }
   },
   {
-    "id": "m6",
+    "id": "2026-02-17-visiting-her-home",
     "order": 6,
     "date": "February 17, 2026",
     "icon": "heart",
@@ -74,7 +74,7 @@
     }
   },
   {
-    "id": "m7",
+    "id": "2026-02-19-hung-temple",
     "order": 7,
     "date": "February 19, 2026",
     "icon": "heart",
@@ -87,7 +87,7 @@
     }
   },
   {
-    "id": "m8",
+    "id": "2026-03-02-planning-getaway",
     "order": 8,
     "date": "March 2, 2026",
     "icon": "sparkles",
@@ -99,7 +99,7 @@
     }
   },
   {
-    "id": "m9",
+    "id": "2026-03-08-womens-day",
     "order": 9,
     "date": "March 8, 2026",
     "icon": "heart",
@@ -108,6 +108,88 @@
     "description": {
       "en": "It was Sunday, I went back to my hometown for a wedding. By evening, I went to buy a large basket of flowers, along with a Bluetooth headphone and a sleep mask. I chose these two gifts very carefully, hoping she would like them. Then I went to her house to give her the flowers. We went to eat a buffet at Manwah together, and then watched the movie \"Thỏ\". The psychological and romantic movie made both of us think quite a bit.",
       "zh": "那是星期天，我回老家参加婚礼。到了晚上，我去买了一大篮花，还有一个蓝牙耳机和一个睡眠眼罩。我非常用心挑选了这两件礼物，希望能得到她的喜欢。然后我去她家送花。我们一起去 Manwah 吃自助餐，然后看了电影《Thỏ》。这部有点心理和浪漫元素的电影让我们两人都有了许多感触。"
+    }
+  },
+  {
+    "id": "2026-03-28-first-adventure",
+    "order": 10,
+    "date": "March 28, 2026",
+    "icon": "sparkles",
+    "isSpecial": true,
+    "layout": "media-left",
+    "navLabel": { "en": "Confessions", "zh": "告白" },
+    "chapter": { "en": "Chapter I: The Encounter", "zh": "第一章：相遇" },
+    "title": { "en": "Our First", "zh": "我们的第一次" },
+    "titleAccent": { "en": "Adventure", "zh": "冒险" },
+    "description": {
+      "en": "It was a weekend in March when our story truly began. Despite the pouring rain, we wandered through Hanoi, sharing laughter over arcade games and a memorable midnight ride home. A perfect memory etched in time.",
+      "zh": "在三月的一个周末，我们的故事才算真正开始。尽管下着倾盆大雨，我们还是在河内漫步，在街机游戏前分享着笑声，并在午夜骑车回家。这是一段铭刻在时间里的完美记忆。"
+    },
+    "video": "https://love-note.earth.io.vn/videos/di_choi.mp4",
+    "videoTag": { "en": "A Rainy First Date", "zh": "雨中的初次约会" },
+    "videoDate": { "en": "Hanoi, Mar 28, 2026", "zh": "Hanoi, 2026年3月28日" },
+    "commentLink": "https://www.facebook.com/share/r/18dp6zyt4n/",
+    "ctaLabel": { "en": "See All", "zh": "查看全部" },
+    "story": {
+      "title": { "en": "The First Adventure", "zh": "第一次冒险" },
+      "date": { "en": "March 28, 2026", "zh": "2026年3月28日" },
+      "paragraphs": [
+        {
+          "en": "It was our very first date, the weekend of March 28, 2026. After work that Saturday, we had planned for you to take a bus down to Hanoi to visit me. When evening fell and I couldn't reach you, my heart grew heavy with worry—until you finally arrived. We wandered around the tranquil Hoan Kiem Lake, caught a movie at Trang Tien Plaza, and stayed out talking until the late hours.",
+          "zh": "这是我们第一次真正的约会，在2026年3月28日的那个周末。那个星期六下班后，我们计划你坐大巴来河内找我。当夜幕降临，我联系不上你的时候，我的心充满了担忧——直到你终于到了。我们在宁静的还剑湖 (Hoan Kiem Lake) 漫步，在长钱广场 (Trang Tien Plaza) 看了场电影，并在外面聊天聊到深夜。"
+        },
+        {
+          "en": "The very next day, I picked you up for an adventure at Royal City. It was raining heavily, and despite our raincoats, our shoes were completely soaked. Yet, the rain couldn't dampen our spirits. We went bowling, played arcade games, shared tacos, and played badminton together. Every second was filled with unapologetic joy.",
+          "zh": "第二天，我接你去 Royal City 探险。雨下得很大，尽管我们穿着雨衣，鞋子还是完全湿透了。然而，雨水并没有浇灭我们的热情。我们一起打保龄球，玩街机游戏，分享了墨西哥卷饼，还一起打羽毛球。每一秒都充满了毫无保留的快乐。"
+        },
+        {
+          "en": "When darkness fell, I couldn't just let you go back alone on a bus. So, I drove you all the way back to your hometown on my motorbike. We finally arrived at 11 PM. Looking back, that rainy weekend remains one of our most beautiful and cherished memories.",
+          "zh": "当夜幕降临，我不能让你一个人坐大巴回去。所以，我骑摩托车一路送你回老家。我们终于在晚上11点到达。回首往事，那个下雨的周末仍然是我们最美丽、最珍贵的记忆之一。"
+        }
+      ]
+    }
+  },
+  {
+    "id": "2026-04-11-meeting-family",
+    "order": 11,
+    "date": "April 11, 2026",
+    "icon": "heart",
+    "isSpecial": true,
+    "layout": "media-right",
+    "navLabel": { "en": "Cinema", "zh": "影院" },
+    "chapter": { "en": "Chapter II: The Family", "zh": "第二章：见家长" },
+    "title": { "en": "Meeting", "zh": "见" },
+    "titleAccent": { "en": "The Family", "zh": "家长" },
+    "description": {
+      "en": "The weekend of April 11th brought a new milestone: meeting your family. From a quiet walk along the dike where we first held hands, to a bustling, warm family lunch.",
+      "zh": "4月11日的周末带来了一个新的里程碑：见你的家人。从我们第一次牵手的河堤安静漫步，到温馨热闹的家庭午餐。"
+    },
+    "video": "https://love-note.earth.io.vn/videos/di_choi_2.mp4",
+    "videoTag": { "en": "Meeting the Family", "zh": "见家长" },
+    "videoDate": { "en": "Hometown, Apr 11, 2026", "zh": "Hometown, 2026年4月11日" },
+    "commentLink": "https://www.facebook.com/share/r/1bNv5pq4wT/",
+    "ctaLabel": { "en": "Read More", "zh": "了解更多" },
+    "story": {
+      "title": { "en": "Meeting The Family", "zh": "见家长" },
+      "date": { "en": "April 11, 2026", "zh": "2026年4月11日" },
+      "paragraphs": [
+        {
+          "en": "It was the weekend of April 11th. I went back to my hometown, and you came to pick me up for a walk. We strolled along the peaceful dike, cutting across the vast, green rice fields. That was the moment I finally gathered the courage to hold your hand for the very first time.",
+          "zh": "那是4月11日周末。我回到了老家，你来接我去散步。我们在安静的河堤漫步，穿过广阔、翠绿的稻田。那一刻，我终于鼓起勇气第一次牵起了你的手。"
+        },
+        {
+          "en": "The next morning, you rode your motorbike to pick me up and visit your grandmother's house for lunch. We went to the market together to buy groceries. When we arrived, meeting your extended family made me quite nervous, but I tried my best to help out in the kitchen—even though my cooking skills were less than stellar! We prepared a feast: fried spring rolls, boiled duck, stir-fried buffalo meat with piper lolot, and bean sprouts with duck. You even brought a bottle of wine and some beers.",
+          "zh": "第二天早上，你骑摩托车来接我去你奶奶家吃午饭。我们一起去市场买菜。当我们到达时，见到你的大家族让我非常紧张，但我还是尽力在厨房帮忙——尽管我的厨艺并不出色！我们准备了一顿丰盛的午餐：炸春卷、煮鸭、野蒌叶炒水牛肉和豆芽炒鸭肉。你甚至还带了一瓶红酒和一些啤酒。"
+        },
+        {
+          "en": "The whole family was so welcoming, and the meal was filled with laughter, which eased my anxiety. I ended up drinking a bit more than I should have, trying to keep up with your brothers, but it was all in good spirits. We finished the meal with a sweet yogurt dessert. Afterward, you drove me to catch my bus back to Hanoi, and surprised me with a beautiful outfit you had ordered for me.",
+          "zh": "一大家人都非常热情，这顿饭充满了欢笑声，缓解了我的焦虑。为了跟上你兄弟们的节奏，我最后喝得有点多了点，但大家都兴致很高。我们以一份甜甜的酸奶作为了饭后甜点结尾。之后，你开车送我去车站坐回河内的大巴，并给了我一个惊喜——一套你为我定制的漂亮衣服。"
+        },
+        {
+          "en": "Meeting your family for the first time was daunting, but everything went wonderfully. It warmed my heart to feel that they liked me too.",
+          "zh": "虽然第一次见你的家人有些胆怯，但一切都很完美。能感觉到他们也喜欢我，这让我的心感到非常温暖。"
+        }
+      ]
     }
   }
 ]
