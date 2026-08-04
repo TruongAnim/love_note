@@ -19,6 +19,7 @@ src/
     firebase.ts          # Firestore client init (reads VITE_FIREBASE_* env vars)
     milestones.ts        # MilestoneDoc type + fetchMilestones()
     config.ts            # SiteConfigDoc type + fetchSiteConfig()
+    messengerStats.ts    # MessengerStatsDoc type + metric resolution/formatting for the stats UI
 
 data/
   milestones.json       # source of truth for the timeline — edit this, then run a sync script
@@ -31,6 +32,14 @@ scripts/
 
 backups/                 # timestamped JSON snapshots written by the sync scripts before every overwrite (gitignored)
 ```
+
+### Firestore collections
+
+| Path | Written by | Holds |
+| --- | --- | --- |
+| `milestones/{id}` | `npm run sync:milestones` | timeline entries, including the special full-page chapters |
+| `config/site` | `npm run sync:config` | hero copy, people, footer, and the *labels* for the stats UI |
+| `messenger_stats/{conversation}` | external Messenger export tooling | raw conversation numbers powering "The Metrics of Us" |
 
 ### Why data lives in Firestore instead of the code
 
@@ -65,9 +74,20 @@ npm run sync:config       # data/site-config.json -> config/site document
 Both scripts write a timestamped backup of whatever was already on Firestore to `backups/` before overwriting, so a bad edit is always recoverable.
 
 - **`data/milestones.json`**: an array of timeline entries. Regular entries need `id` (date-based slug), `order`, `date`, `icon` (`heart` | `message` | `sparkles`), bilingual `title`/`description`, optional `image`, and `isHighlight` to feature it on the homepage timeline. Set `isSpecial: true` for a milestone that gets its own full-page section (see existing entries for the full shape: `chapter`, `titleAccent`, `video`, `story`, etc.) — it will automatically get a nav link (if `navLabel` is set), its own section, and a standout card in the "See All Memories" popup that scrolls to it on click.
-- **`data/site-config.json`**: hero background/copy/quote, the two people (name, avatar, Facebook link, accent color), the stats popup numbers, and the footer line.
+- **`data/site-config.json`**: hero background/copy/quote, the two people (name, avatar, Facebook link, accent color), the stats tile labels, and the footer line.
 
 Deleting an entry from either JSON file and re-running the sync script removes it from Firestore too — the scripts do a full delete-then-rewrite, not a merge.
+
+### The stats section ("The Metrics of Us")
+
+Every number there comes from `messenger_stats/{id}`, not from the config — the config only decides *which* numbers to show and what to call them:
+
+- `stats.source` picks the conversation document (e.g. `bich_ngoc`).
+- Each summary/detail tile names a `metric` instead of carrying a value. Available metrics: `daysTogether` (derived from the first/last message timestamps), `messages`, `text`, `media`, `links`, `unsent`, `reactions`, `activeDays`, `longestStreak`, `avgPerActiveDay`.
+- A detail tile can add `subMetric`; its `sub` caption then has any `{value}` token replaced with that number (e.g. `"~{value}/day"` → `~86.26/day`).
+- The per-person contribution cards read `bySender[]`, matched to each person by the `messengerName` field in the config — set that to the exact name used in the Messenger export.
+
+Because these numbers live in their own collection, re-running the Messenger export updates the site with no config change and no redeploy. The document also carries `byHour`, `byDay`, `byMonth`, and `topReactions`, which the UI does not use yet.
 
 ## Deploying
 

@@ -22,6 +22,13 @@ import { Heart,
 import { translations, Lang } from './translations';
 import { fetchMilestones, MilestoneDoc, MilestoneIcon, SpecialLayout } from './services/milestones';
 import { fetchSiteConfig, SiteConfigDoc, StatIcon, PersonDoc } from './services/config';
+import {
+  fetchMessengerStats,
+  formatPeriod,
+  formatStatValue,
+  MessengerStatsDoc,
+  resolveMetric
+} from './services/messengerStats';
 
 // --- Types ---
 interface Stat {
@@ -132,14 +139,16 @@ const toMemoryEntries = (docs: MilestoneDoc[], lang: Lang): MemoryEntry[] =>
       : { kind: 'regular' as const, data: localizeMilestone(d, lang) }
   );
 
-const getStats = (config: SiteConfigDoc | null, lang: Lang): Stat[] =>
-  (config?.stats.summary ?? []).map((s) => ({
+const getStats = (config: SiteConfigDoc | null, stats: MessengerStatsDoc | null, lang: Lang): Stat[] => {
+  if (!config || !stats) return [];
+  return config.stats.summary.map((s) => ({
     id: s.id,
-    value: s.value,
+    value: formatStatValue(resolveMetric(stats, s.metric)),
     label: s.label[lang],
     icon: STAT_ICONS[s.icon],
     bgClass: s.bgClass
   }));
+};
 
 // --- Components ---
 
@@ -212,9 +221,9 @@ const ACCENT_STYLES = {
   }
 } as const;
 
-const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClose: () => void, lang: Lang, config: SiteConfigDoc | null }) => {
+const StatsPopup = ({ isOpen, onClose, lang, config, stats }: { isOpen: boolean, onClose: () => void, lang: Lang, config: SiteConfigDoc | null, stats: MessengerStatsDoc | null }) => {
   const t = translations[lang].popups.stats;
-  const peopleById = new Map((config?.people ?? []).map((p) => [p.id, p]));
+  const sendersByName = new Map((stats?.bySender ?? []).map((s) => [s.name, s]));
   return (
     <AnimatePresence>
       {isOpen && (
@@ -260,7 +269,9 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
             <div className="p-6 md:p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-lowest/50 backdrop-blur-xl relative z-20">
               <div>
                 <h2 className="font-headline text-2xl md:text-3xl text-primary">{t.title}</h2>
-                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">{config?.stats.period[lang]}<span className="opacity-70">{config?.stats.periodDays[lang]}</span></p>
+                <p className="text-on-surface-variant font-body mt-1 text-sm md:text-base">
+                  {stats && <>{formatPeriod(stats, lang)} <span className="opacity-70">({formatStatValue(resolveMetric(stats, 'daysTogether'))} {t.daysUnit})</span></>}
+                </p>
               </div>
               <button 
                 onClick={onClose}
@@ -276,7 +287,7 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
             <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar relative z-20 space-y-8">
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {(config?.stats.detail ?? []).map((stat, i) => (
+                {stats && (config?.stats.detail ?? []).map((stat, i) => (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -287,22 +298,26 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
                   >
                     <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-3">{stat.label[lang]}</p>
                     <div>
-                      <p className="font-display text-2xl md:text-3xl text-primary mb-1">{stat.value}</p>
-                      <p className="text-xs text-secondary/80 italic">{stat.sub[lang]}</p>
+                      <p className="font-display text-2xl md:text-3xl text-primary mb-1">{formatStatValue(resolveMetric(stats, stat.metric))}</p>
+                      <p className="text-xs text-secondary/80 italic">
+                        {stat.subMetric
+                          ? stat.sub[lang].replace('{value}', formatStatValue(resolveMetric(stats, stat.subMetric)))
+                          : stat.sub[lang]}
+                      </p>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                {(config?.stats.contributions ?? []).map((c, i) => {
-                  const person = peopleById.get(c.personId);
-                  if (!person) return null;
+                {(config?.people ?? []).map((person, i) => {
+                  const sender = sendersByName.get(person.messengerName);
+                  if (!sender) return null;
                   const style = ACCENT_STYLES[person.accent];
 
                   return (
                     <motion.div
-                      key={c.personId}
+                      key={person.id}
                       initial={{ opacity: 0, x: i === 0 ? -20 : 20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -315,7 +330,7 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
                       <div className="flex justify-between items-end mb-4 relative z-10">
                         <div>
                           <h3 className={`font-display text-2xl mb-1 ${style.name}`}>{person.name}</h3>
-                          <p className={`text-sm font-semibold tracking-wider ${style.percent}`}>{c.percent}% {t.contrib}</p>
+                          <p className={`text-sm font-semibold tracking-wider ${style.percent}`}>{Math.round(sender.share)}% {t.contrib}</p>
                         </div>
                         <div className={`w-12 h-12 rounded-full overflow-hidden border-2 shadow-lg ${style.avatarBorder}`}>
                           <img src={person.avatar} alt={person.name} className="w-full h-full object-cover" />
@@ -325,7 +340,7 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
                       <div className={`w-full h-2 rounded-full mb-6 overflow-hidden relative z-10 ${style.track}`}>
                         <motion.div
                           initial={{ width: 0 }}
-                          whileInView={{ width: `${c.percent}%` }}
+                          whileInView={{ width: `${sender.share}%` }}
                           viewport={{ once: true }}
                           transition={{ duration: 1, delay: 0.5 }}
                           className={`h-full rounded-full ${style.bar}`}
@@ -334,9 +349,9 @@ const StatsPopup = ({ isOpen, onClose, lang, config }: { isOpen: boolean, onClos
 
                       <div className="grid grid-cols-3 gap-2 text-center relative z-10">
                         {[
-                          { value: c.messages, label: t.msg },
-                          { value: c.given, label: t.given },
-                          { value: c.got, label: t.got }
+                          { value: formatStatValue(sender.total), label: t.msg },
+                          { value: formatStatValue(sender.reactionsGiven), label: t.given },
+                          { value: formatStatValue(sender.reactionsReceived), label: t.got }
                         ].map((tile) => (
                           <div key={tile.label} className={`bg-surface/60 rounded-xl p-3 border ${style.tile}`}>
                             <p className="font-display text-xl text-on-surface mb-1">{tile.value}</p>
@@ -706,6 +721,7 @@ export default function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [milestoneDocs, setMilestoneDocs] = useState<MilestoneDoc[]>([]);
   const [config, setConfig] = useState<SiteConfigDoc | null>(null);
+  const [messengerStats, setMessengerStats] = useState<MessengerStatsDoc | null>(null);
 
   const t = translations[lang];
   const people = config?.people ?? [];
@@ -723,7 +739,12 @@ export default function App() {
 
   useEffect(() => {
     fetchMilestones().then(setMilestoneDocs).catch(console.error);
-    fetchSiteConfig().then(setConfig).catch(console.error);
+    fetchSiteConfig()
+      .then((cfg) => {
+        setConfig(cfg);
+        return cfg?.stats.source ? fetchMessengerStats(cfg.stats.source).then(setMessengerStats) : undefined;
+      })
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -770,7 +791,7 @@ export default function App() {
       <SideNav activeSection={activeSection} sections={sectionIds} />
       <MemoriesPopup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} lang={lang} entries={memoryEntries} onNavigate={handleNavigateToSection} />
       <StoryPopup story={activeStory} onClose={() => setActiveStory(null)} />
-      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} config={config} />
+      <StatsPopup isOpen={isStatsPopupOpen} onClose={() => setIsStatsPopupOpen(false)} lang={lang} config={config} stats={messengerStats} />
 
       <main ref={containerRef} className="snap-container">
         {/* SECTION 1: HERO */}
@@ -899,7 +920,7 @@ export default function App() {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-              {getStats(config, lang).map((stat, idx) => (
+              {getStats(config, messengerStats, lang).map((stat, idx) => (
                 <motion.div 
                   key={stat.id}
                   initial={{ opacity: 0, y: 30 }}
