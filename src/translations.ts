@@ -48,6 +48,7 @@ export const translations = {
       },
       stats: {
         title: 'Our Digital Connection',
+        daysUnit: 'days',
         contrib: 'CONTRIBUTION',
         msg: 'Messages',
         given: 'Given Reacts',
@@ -102,6 +103,7 @@ export const translations = {
       },
       stats: {
         title: '我们的数字连接',
+        daysUnit: '天',
         contrib: '贡献',
         msg: '信息数',
         given: '送出点赞',
