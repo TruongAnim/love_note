@@ -91,6 +91,15 @@ Because these numbers live in their own collection, re-running the Messenger exp
 
 ## Deploying
 
+Live at **https://love.earth.io.vn** — GitHub Pages serving a custom subdomain of `earth.io.vn`, whose DNS is managed in Cloudflare.
+
 Pushing to `main` triggers the GitHub Actions workflow, which builds with Vite and publishes to GitHub Pages. The build needs the same `VITE_FIREBASE_*` values as `.env.local`, set as repository secrets (Settings → Secrets and variables → Actions) under the same names.
+
+Two pieces make the custom domain work, and both must stay in place:
+
+- `public/CNAME` holds the domain, so it survives every deploy (GitHub otherwise drops the setting).
+- `VITE_BASE_PATH: /` in the workflow. The site sits at the root of its own subdomain, so it must *not* carry the `/love_note/` prefix that a `user.github.io/repo` URL needs — with the wrong base every asset 404s.
+
+Note that `love-note.earth.io.vn` is a separate Cloudflare R2 bucket holding the images and videos referenced from `data/milestones.json`. It is unrelated to hosting the site, so leave its DNS record alone.
 
 Firestore data itself isn't part of the build — it's fetched at runtime, so updating content via `npm run sync` takes effect immediately on the live site without a redeploy.
